@@ -35,37 +35,164 @@ public class PokemonService {
         }).collect(Collectors.toList());
     }
     
-    // Agregar el mio region :) Mario
-     public List<Pokemon> getByRegion(String region) {
+   public List<Pokemon> buscarPokemon(String nombre) {
+        String url = "https://pokeapi.co/api/v2/pokemon?limit=1300&offset=0";
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+        List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
+
+        return results.parallelStream()
+                .filter(p -> p.get("name").toLowerCase().contains(nombre.toLowerCase()))
+                .map(p -> {
+                    Pokemon pokemon = new Pokemon();
+                    pokemon.setNombre(p.get("name"));
+                    String urlDetalle = p.get("url");
+                    String[] parts = urlDetalle.split("/");
+                    String id = parts[parts.length - 1];
+                    pokemon.setId(Integer.parseInt(id));
+                    pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
+                    return pokemon;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Pokemon> getByRegion(String region) {
+ 
+        if (region == null || region.isBlank()) {
+            return new ArrayList<>();
+        }
+ 
         String regionUrl = "https://pokeapi.co/api/v2/region/" + region;
+ 
         Map<String, Object> regionResponse =
                 restTemplate.getForObject(regionUrl, Map.class);
-
+ 
         List<Map<String, Object>> pokedexes =
                 (List<Map<String, Object>>) regionResponse.get("pokedexes");
-
+ 
+        if (pokedexes == null || pokedexes.isEmpty()) {
+            return new ArrayList<>();
+        }
+ 
         String pokedexUrl = (String) pokedexes.get(0).get("url");
-
+ 
         Map<String, Object> pokedexResponse =
                 restTemplate.getForObject(pokedexUrl, Map.class);
-
+ 
         List<Map<String, Object>> entries =
                 (List<Map<String, Object>>) pokedexResponse.get("pokemon_entries");
-
+ 
         List<Pokemon> lista = new ArrayList<>();
-
+ 
         for (Map<String, Object> entry : entries) {
-
-            Map<String, String> species =
-                    (Map<String, String>) entry.get("pokemon_species");
-
+ 
+            Map<String, Object> species =
+                    (Map<String, Object>) entry.get("pokemon_species");
+ 
+            String name = (String) species.get("name");
+            String url = (String) species.get("url");
+ 
+            String cleanUrl = url.endsWith("/")
+                    ? url.substring(0, url.length() - 1)
+                    : url;
+ 
+            String idStr = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
+            int id = Integer.parseInt(idStr);
+ 
             Pokemon pokemon = new Pokemon();
-            pokemon.setNombre(species.get("name"));
-
+            pokemon.setId(id);
+            pokemon.setNombre(name);
+            pokemon.setUrlImagen(
+                    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png"
+            );
+ 
             lista.add(pokemon);
         }
-
+ 
         return lista;
     }
+ 
+    public List<Pokemon> getByType(String type) {
+ 
+        if (type == null || type.isBlank()) {
+            return new ArrayList<>();
+        }
+ 
+        String url = "https://pokeapi.co/api/v2/type/" + type;
+ 
+        Map<String, Object> response =
+                restTemplate.getForObject(url, Map.class);
+ 
+        if (response == null || response.get("pokemon") == null) {
+            return new ArrayList<>();
+        }
+ 
+        List<Map<String, Object>> pokemonList =
+                (List<Map<String, Object>>) response.get("pokemon");
+ 
+        List<Pokemon> lista = new ArrayList<>();
+ 
+        for (Map<String, Object> p : pokemonList) {
+ 
+            Map<String, Object> poke =
+                    (Map<String, Object>) p.get("pokemon");
+ 
+            String name = (String) poke.get("name");
+            String pokeUrl = (String) poke.get("url");
+ 
+            String cleanUrl = pokeUrl.endsWith("/")
+                    ? pokeUrl.substring(0, pokeUrl.length() - 1)
+                    : pokeUrl;
+ 
+            String idStr = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
+            int id = Integer.parseInt(idStr);
+ 
+            Pokemon pokemon = new Pokemon();
+            pokemon.setId(id);
+            pokemon.setNombre(name);
+            pokemon.setUrlImagen(
+                    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png"
+            );
+ 
+            lista.add(pokemon);
+        }
+ 
+        return lista;
+    }
+ 
+  
+    public List<Pokemon> getByRegionAndType(String region, String type) {
+ 
+        boolean tieneRegion = region != null && !region.isBlank();
+        boolean tieneTipo = type != null && !type.isBlank();
+ 
+        if (tieneRegion && !tieneTipo) {
+            return getByRegion(region);
+        }
+ 
+        if (tieneTipo && !tieneRegion) {
+            return getByType(type);
+        }
+ 
+        if (tieneRegion && tieneTipo) {
+ 
+            List<Pokemon> porRegion = getByRegion(region);
+            List<Pokemon> porTipo = getByType(type);
+ 
+            List<Pokemon> resultado = new ArrayList<>();
+ 
+            for (Pokemon r : porRegion) {
+                for (Pokemon t : porTipo) {
+                    if (r.getId() == t.getId()) {
+                        resultado.add(r);
+                    }
+                }
+            }
+ 
+            return resultado;
+        }
+ 
+        return GetAll(20, 0);
+    }
+   
    
 }

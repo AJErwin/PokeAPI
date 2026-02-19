@@ -16,28 +16,50 @@ public class PokemonController {
     private PokemonService pokemonService;
 
     @GetMapping("/pokedex")
-    public String getAll(@RequestParam(defaultValue = "24") int limit,
-            @RequestParam(defaultValue = "0") int offset,
-            Model model) {
-
+    public String getAll(@RequestParam(defaultValue = "22") int limit,
+                         @RequestParam(defaultValue = "0") int offset, 
+                         Model model) {
         List<Pokemon> pokemones = pokemonService.GetAll(limit, offset);
-
         model.addAttribute("pokemones", pokemones);
         model.addAttribute("currentOffset", offset);
         model.addAttribute("limit", limit);
-
         return "index";
     }
 
-    //cambio mio (Mario region)
+    @GetMapping("/pokedex/buscar")
+    public String buscarPokemon(@RequestParam String nombre, Model model) {
+        List<Pokemon> resultados = pokemonService.buscarPokemon(nombre);
+        model.addAttribute("pokemones", resultados);
+        model.addAttribute("currentOffset", 0);
+        model.addAttribute("limit", 22);
+        return "index";
+    }
+
     @GetMapping("/region")
     public String getByRegion(@RequestParam String region, Model model) {
-
         List<Pokemon> pokemones = pokemonService.getByRegion(region);
-
         model.addAttribute("pokemones", pokemones);
-
         return "index";
     }
 
+    @GetMapping("/type")
+    public String getByType(@RequestParam String type, Model model) {
+        List<Pokemon> pokemones = pokemonService.getByType(type);
+        model.addAttribute("pokemones", pokemones);
+        model.addAttribute("currentOffset", 0);
+        model.addAttribute("limit", pokemones.size());
+        return "index";
+    }
+
+    @GetMapping("/filtro")
+    public String filtrar(
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String type,
+            Model model) {
+        List<Pokemon> pokemones = pokemonService.getByRegionAndType(region, type);
+        model.addAttribute("pokemones", pokemones);
+        model.addAttribute("currentOffset", 0);
+        model.addAttribute("limit", pokemones.size());
+        return "index";
+    }
 }
