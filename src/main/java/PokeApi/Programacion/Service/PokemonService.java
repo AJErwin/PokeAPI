@@ -21,7 +21,7 @@ public class PokemonService {
 
         return results.stream().map(p -> {
             Pokemon pokemon = new Pokemon();
-            pokemon.setNombre(p.get("name"));
+            pokemon.setNombre(p.get("name")); 
             return pokemon;
         }).collect(Collectors.toList());
     }
