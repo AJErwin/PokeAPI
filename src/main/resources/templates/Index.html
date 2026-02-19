@@ -2,122 +2,223 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Pokedex GBA B/N</title>
+    <title>Pokedex GBA - Sistema de Gestión</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Press Start 2P', cursive;
-            background-color: #f0f0f0;
+            background-color: #38b0a8; 
+            background-image: radial-gradient(#48c0b8 20%, transparent 20%);
+            background-size: 20px 20px;
             color: #1a1a1a;
-            padding-top: 40px;
+            padding-top: 20px;
         }
         h1 {
             text-align: center;
-            border: 4px solid #1a1a1a;
-            background-color: #fff;
-            padding: 20px;
-            display: inline-block;
+            border: 6px solid #585858;
+            background-color: #ff1100;
+            color: white;
+            padding: 15px;
             width: 100%;
-            margin-bottom: 40px;
-            font-size: 20px;
+            margin-bottom: 20px;
+            font-size: 18px;
             text-transform: uppercase;
+            box-shadow: 0 6px 0 #a00000;
+            text-shadow: 2px 2px #800000;
         }
         .pokedex-container {
-            border: 8px solid #1a1a1a;
-            padding: 30px;
-            background-color: #d8d8d8;
+            border: 8px solid #585858;
+            border-radius: 15px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            box-shadow: 0 10px 0 #303030;
         }
-        .pokemon-card {
-            background-color: #fff;
-            border: 4px solid #1a1a1a;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 6px 6px 0px #888;
+        .filter-section {
+            border: 4px solid #585858;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
             height: 100%;
         }
+        .bg-kanto { background: linear-gradient(135deg, #78c850 0%, #5ca935 100%); }
+        .bg-johto { background: linear-gradient(135deg, #ffce4b 0%, #e1a100 100%); }
+        .bg-hoenn { background: linear-gradient(135deg, #4592c4 0%, #176091 100%); }
+        .bg-sinnoh { background: linear-gradient(135deg, #b8b8d0 0%, #808098 100%); }
+        .bg-unova { background: linear-gradient(135deg, #a8a878 0%, #707048 100%); }
+        .bg-kalos { background: linear-gradient(135deg, #f08030 0%, #c05000 100%); }
+        .bg-alola { background: linear-gradient(135deg, #f8d030 0%, #c8a000 100%); }
+        .bg-galar { background: linear-gradient(135deg, #ee99ac 0%, #d65076 100%); }
+        .bg-paldea { background: linear-gradient(135deg, #705898 0%, #483860 100%); }
+        .section-title {
+            font-size: 7px;
+            background: #585858;
+            color: white;
+            padding: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+            border-radius: 2px;
+        }
+        .form-control, .form-select {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            border: 2px solid #585858;
+            border-radius: 4px;
+            background-color: rgba(255,255,255,0.95);
+            height: 35px;
+        }
+        .pokemon-card {
+            background-color: #ffffff; 
+            border: 4px solid #585858;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 4px 4px 0px #bcbcbc;
+            height: 100%;
+            border-radius: 8px;
+        }
         .pokemon-img-container {
-            height: 90px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #e0e0e0;
-            border: 2px solid #1a1a1a;
-            margin-bottom: 10px;
+            background-color: #d0f0f8;
+            border: 2px solid #585858;
+            margin-bottom: 8px;
+            border-radius: 4px;
         }
         .pokemon-img {
-            height: 70px;
+            height: 90px;
             image-rendering: pixelated;
-            filter: grayscale(100%) contrast(120%);
         }
         .pokemon-name {
             text-transform: uppercase;
             font-size: 9px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #1a1a1a;
-            padding-bottom: 5px;
-            min-height: 30px;
+            margin-bottom: 10px;
+            min-height: 20px;
         }
         .btn-retro {
             font-family: 'Press Start 2P', cursive;
-            font-size: 8px !important;
-            background-color: #1a1a1a;
+            font-size: 7px !important;
+            background-color: #ff1100;
             color: #fff;
-            border: none;
-            padding: 10px;
+            border: 2px solid #800000;
+            padding: 8px;
             text-transform: uppercase;
             text-decoration: none;
             display: inline-block;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #800000;
+            width: 100%;
         }
-        .btn-retro:hover {
-            background-color: #444;
-            color: #fff;
+        .btn-retro:active {
+            box-shadow: none;
+            transform: translateY(2px);
         }
         .pagination-container {
-            margin-top: 40px;
-            padding: 20px;
-            border-top: 4px solid #1a1a1a;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #efefef;
+            border: 4px solid #585858;
             display: flex;
-            justify-content:间-between;
+            justify-content: space-between;
             align-items: center;
+            border-radius: 8px;
         }
     </style>
-    <nav class="navbar bg-body-tertiary">
-  <form class="container-fluid">
-    <div class="input-group">
-      <span class="input-group-text" id="basic-addon1">◓</span>
-      <input type="text" class="form-control" placeholder="Pokemon" aria-label="Pokemon" aria-describedby="basic-addon1"/>
-    </div>
-  </form>
-</nav>
 </head>
 <body>
+
 <div class="container pokedex-container">
     <h1>POKEDEX SYSTEM</h1>
-    
-    <div class="row g-4">
-        <div class="col-md-3" th:each="pokemon : ${pokemones}">
+
+    <div class="filter-bar">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <div class="filter-section" style="background: #ddd;">
+                    <span class="section-title">BUSCAR</span>
+                    <form th:action="@{/pokedex/buscar}" method="get" class="d-flex flex-column gap-2">
+                        <input type="text" name="nombre" class="form-control" placeholder="NOMBRE..."/>
+                        <button type="submit" class="btn-retro">OK</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div id="region-bg" class="filter-section bg-kanto">
+                    <span class="section-title">FILTRO AVANZADO</span>
+                    <form th:action="@{/filtro}" method="get" class="row g-2">
+                        <div class="col-6">
+                            <select name="type" class="form-select">
+                                <option value="">TIPO (TODOS)</option>
+                                <option value="fire">🔥 FUEGO</option>
+                                <option value="water">💧 AGUA</option>
+                                <option value="grass">🌿 PLANTA</option>
+                                <option value="electric">⚡ ELÉCTRICO</option>
+                                <option value="ice">❄️ HIELO</option>
+                                <option value="fighting">👊 LUCHA</option>
+                                <option value="poison">☠️ VENENO</option>
+                                <option value="ground">⛰️ TIERRA</option>
+                                <option value="flying">🦅 VOLADOR</option>
+                                <option value="psychic">🧠 PSÍQUICO</option>
+                                <option value="bug">🐛 BICHO</option>
+                                <option value="rock">🧱 ROCA</option>
+                                <option value="ghost">👻 FANTASMA</option>
+                                <option value="dragon">🐲 DRAGÓN</option>
+                                <option value="dark">🌑 SINIESTRO</option>
+                                <option value="steel">⚙️ ACERO</option>
+                                <option value="fairy">✨ HADA</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <select name="region" id="region-select" class="form-select" onchange="updateBg()">
+                                <option value="kanto">KANTO</option>
+                                <option value="johto">JOHTO</option>
+                                <option value="hoenn">HOENN</option>
+                                <option value="sinnoh">SINNOH</option>
+                                <option value="unova">UNOVA</option>
+                                <option value="kalos">KALOS</option>
+                                <option value="alola">ALOLA</option>
+                                <option value="galar">GALAR</option>
+                                <option value="paldea">PALDEA</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn-retro">FILTRAR POKEMON</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-cols-2 row-cols-md-4 g-3">
+        <div class="col" th:each="pokemon : ${pokemones}">
             <div class="pokemon-card">
                 <div class="pokemon-img-container">
                     <img th:src="${pokemon.urlImagen}" class="pokemon-img">
                 </div>
                 <div class="pokemon-name" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
-                <button class="btn btn-retro w-100">GUARDAR</button>
+                <button class="btn btn-retro">GUARDAR</button>
             </div>
         </div>
     </div>
 
-    <div class="pagination-container">
-        <a th:if="${currentOffset > 0}" 
-           th:href="@{/pokedex(limit=${limit}, offset=${currentOffset - limit})}" 
-           class="btn-retro"> < ANTERIOR </a>
-        
-        <span style="font-size: 10px;" th:text="'PAG: ' + (${currentOffset / limit} + 1)"></span>
-        
-        <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit})}" 
-           class="btn-retro"> SIGUIENTE > </a>
+    <div class="pagination-container" th:if="${limit != null}">
+        <a th:if="${currentOffset > 0}" th:href="@{/pokedex(limit=${limit}, offset=${currentOffset - limit})}" class="btn-retro" style="width: auto; padding: 5px 15px;"> < ANT </a>
+        <span style="font-size: 8px;" th:text="'PAG: ' + (${currentOffset / limit} + 1)"></span>
+        <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit})}" class="btn-retro" style="width: auto; padding: 5px 15px;"> SIG > </a>
     </div>
 </div>
+
+<script>
+    function updateBg() {
+        const select = document.getElementById('region-select');
+        const container = document.getElementById('region-bg');
+        const region = select.value;
+        container.className = 'filter-section bg-' + region;
+    }
+</script>
+
 </body>
 </html>
