@@ -1,6 +1,7 @@
 package PokeApi.Programacion.Service;
 
 import PokeApi.Programacion.ML.Pokemon;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,4 +34,43 @@ public class PokemonService {
             return pokemon;
         }).collect(Collectors.toList());
     }
+    
+    // Agregar el mio region 
+     public List<Pokemon> getByRegion(String region) {
+
+        // 1️⃣ Traemos la región
+        String regionUrl = "https://pokeapi.co/api/v2/region/" + region;
+        Map<String, Object> regionResponse =
+                restTemplate.getForObject(regionUrl, Map.class);
+
+        // 2️⃣ Obtenemos la primera pokedex
+        List<Map<String, Object>> pokedexes =
+                (List<Map<String, Object>>) regionResponse.get("pokedexes");
+
+        String pokedexUrl = (String) pokedexes.get(0).get("url");
+
+        // 3️⃣ Traemos la pokedex
+        Map<String, Object> pokedexResponse =
+                restTemplate.getForObject(pokedexUrl, Map.class);
+
+        List<Map<String, Object>> entries =
+                (List<Map<String, Object>>) pokedexResponse.get("pokemon_entries");
+
+        // 4️⃣ Convertimos a lista simple
+        List<Pokemon> lista = new ArrayList<>();
+
+        for (Map<String, Object> entry : entries) {
+
+            Map<String, String> species =
+                    (Map<String, String>) entry.get("pokemon_species");
+
+            Pokemon pokemon = new Pokemon();
+            pokemon.setNombre(species.get("name"));
+
+            lista.add(pokemon);
+        }
+
+        return lista;
+    }
+   
 }

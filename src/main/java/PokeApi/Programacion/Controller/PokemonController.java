@@ -17,15 +17,27 @@ public class PokemonController {
 
     @GetMapping("/pokedex")
     public String getAll(@RequestParam(defaultValue = "24") int limit,
-                         @RequestParam(defaultValue = "0") int offset, 
-                         Model model) {
-        
+            @RequestParam(defaultValue = "0") int offset,
+            Model model) {
+
         List<Pokemon> pokemones = pokemonService.GetAll(limit, offset);
-        
+
         model.addAttribute("pokemones", pokemones);
         model.addAttribute("currentOffset", offset);
         model.addAttribute("limit", limit);
-        
+
         return "index";
     }
+
+    //cambio mio (Mario region)
+    @GetMapping("/region")
+    public String getByRegion(@RequestParam String region, Model model) {
+
+        List<Pokemon> pokemones = pokemonService.getByRegion(region);
+
+        model.addAttribute("pokemones", pokemones);
+
+        return "index";
+    }
+
 }
