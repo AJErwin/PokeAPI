@@ -19,9 +19,17 @@ public class PokemonService {
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
         List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
 
-        return results.stream().map(p -> {
+        return results.parallelStream().map(p -> {
             Pokemon pokemon = new Pokemon();
-            pokemon.setNombre(p.get("name")); 
+            pokemon.setNombre(p.get("name"));
+
+            String urlDetalle = p.get("url");
+            String[] parts = urlDetalle.split("/");
+            String id = parts[parts.length - 1];
+            
+            pokemon.setId(Integer.parseInt(id));
+            pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
+            
             return pokemon;
         }).collect(Collectors.toList());
     }

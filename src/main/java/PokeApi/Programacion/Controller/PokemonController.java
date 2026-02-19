@@ -16,13 +16,15 @@ public class PokemonController {
     private PokemonService pokemonService;
 
     @GetMapping("/pokedex")
-    public String getAll(@RequestParam(defaultValue = "20") int limit,
+    public String getAll(@RequestParam(defaultValue = "24") int limit,
                          @RequestParam(defaultValue = "0") int offset, 
                          Model model) {
         
         List<Pokemon> pokemones = pokemonService.GetAll(limit, offset);
         
         model.addAttribute("pokemones", pokemones);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
         
         return "index";
     }
