@@ -1,13 +1,8 @@
-
 package PokeApi.Programacion.JPA;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
-/**
- *
- * @author Alien 9
- */
 public class Result <T>{
     
     public boolean Correct;
