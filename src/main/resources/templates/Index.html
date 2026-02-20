@@ -42,6 +42,7 @@
             margin-bottom: 10px;
             height: 100%;
         }
+        .bg-dual { background: linear-gradient(135deg, #705898 0%, #ee99ac 100%); }
         .bg-kanto { background: linear-gradient(135deg, #78c850 0%, #5ca935 100%); }
         .bg-johto { background: linear-gradient(135deg, #ffce4b 0%, #e1a100 100%); }
         .bg-hoenn { background: linear-gradient(135deg, #4592c4 0%, #176091 100%); }
@@ -76,6 +77,8 @@
             box-shadow: 4px 4px 0px #bcbcbc;
             height: 100%;
             border-radius: 8px;
+            position: relative;
+            overflow: hidden;
         }
         .pokemon-img-container {
             height: 120px;
@@ -86,14 +89,33 @@
             border: 2px solid #585858;
             margin-bottom: 8px;
             border-radius: 4px;
+            position: relative;
         }
         .pokemon-img {
             height: 90px;
             image-rendering: pixelated;
+            position: relative;
+            z-index: 2;
+        }
+        .evo-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px;
+            opacity: 0.25;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .evo-img {
+            height: 65px;
+            image-rendering: pixelated;
         }
         .pokemon-name {
             text-transform: uppercase;
-            font-size: 9px;
+            font-size: 8px;
             margin-bottom: 10px;
             min-height: 20px;
         }
@@ -134,9 +156,9 @@
 
     <div class="filter-bar">
         <div class="row g-2">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="filter-section" style="background: #ddd;">
-                    <span class="section-title">BUSCAR</span>
+                    <span class="section-title">NOMBRE</span>
                     <form th:action="@{/pokedex/buscar}" method="get" class="d-flex flex-column gap-2">
                         <input type="text" name="nombre" class="form-control" placeholder="NOMBRE..."/>
                         <button type="submit" class="btn-retro">OK</button>
@@ -144,13 +166,13 @@
                 </div>
             </div>
 
-            <div class="col-md-8">
+            <div class="col-md-5">
                 <div id="region-bg" class="filter-section bg-kanto">
-                    <span class="section-title">FILTRO AVANZADO</span>
+                    <span class="section-title">REGIÓN Y TIPO</span>
                     <form th:action="@{/filtro}" method="get" class="row g-2">
                         <div class="col-6">
                             <select name="type" class="form-select">
-                                <option value="">TIPO (TODOS)</option>
+                                <option value="">TIPO</option>
                                 <option value="fire">🔥 FUEGO</option>
                                 <option value="water">💧 AGUA</option>
                                 <option value="grass">🌿 PLANTA</option>
@@ -184,7 +206,36 @@
                             </select>
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn-retro">FILTRAR POKEMON</button>
+                            <button type="submit" class="btn-retro">FILTRAR</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="filter-section bg-dual">
+                    <span class="section-title">DOBLE TIPO</span>
+                    <form th:action="@{/pokedex/dual}" method="get" class="row g-2">
+                        <div class="col-6">
+                            <select name="type1" class="form-select">
+                                <option value="ghost">👻 T1</option>
+                                <option value="fire">🔥 FUE</option>
+                                <option value="water">💧 AGU</option>
+                                <option value="grass">🌿 PLA</option>
+                                <option value="fairy">✨ HAD</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <select name="type2" class="form-select">
+                                <option value="fairy">✨ T2</option>
+                                <option value="ghost">👻 FAN</option>
+                                <option value="poison">☠️ VEN</option>
+                                <option value="steel">⚙️ ACE</option>
+                                <option value="dark">🌑 SIN</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn-retro">BUSCAR DUAL</button>
                         </div>
                     </form>
                 </div>
@@ -196,6 +247,10 @@
         <div class="col" th:each="pokemon : ${pokemones}">
             <div class="pokemon-card">
                 <div class="pokemon-img-container">
+                    <div class="evo-bg">
+                        <img th:if="${pokemon.id > 1}" th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id - 1} + '.png'" class="evo-img">
+                        <img th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id + 1} + '.png'" class="evo-img">
+                    </div>
                     <img th:src="${pokemon.urlImagen}" class="pokemon-img">
                 </div>
                 <div class="pokemon-name" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
@@ -207,7 +262,7 @@
     <div class="pagination-container" th:if="${limit != null}">
         <a th:if="${currentOffset > 0}" th:href="@{/pokedex(limit=${limit}, offset=${currentOffset - limit})}" class="btn-retro" style="width: auto; padding: 5px 15px;"> < ANT </a>
         <span style="font-size: 8px;" th:text="'PAG: ' + (${currentOffset / limit} + 1)"></span>
-        <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit})}" class="btn-retro" style="width: auto; padding: 5px 15px;"> SIG > </a>
+        <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit})}" class="btn-retro" style="width: auto; padding: 10px 20px;"> SIG > </a>
     </div>
 </div>
 
@@ -215,8 +270,7 @@
     function updateBg() {
         const select = document.getElementById('region-select');
         const container = document.getElementById('region-bg');
-        const region = select.value;
-        container.className = 'filter-section bg-' + region;
+        container.className = 'filter-section bg-' + select.value;
     }
 </script>
 
