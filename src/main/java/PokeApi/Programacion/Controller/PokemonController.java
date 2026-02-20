@@ -35,27 +35,19 @@ public class PokemonController {
         return "index";
     }
 
-    @GetMapping("/region")
-    public String getByRegion(@RequestParam String region, Model model) {
-        List<Pokemon> pokemones = pokemonService.getByRegion(region);
-        model.addAttribute("pokemones", pokemones);
-        return "index";
-    }
-
-    @GetMapping("/type")
-    public String getByType(@RequestParam String type, Model model) {
-        List<Pokemon> pokemones = pokemonService.getByType(type);
-        model.addAttribute("pokemones", pokemones);
+    @GetMapping("/pokedex/dual")
+    public String buscarDual(@RequestParam String type1, @RequestParam String type2, Model model) {
+        List<Pokemon> resultados = pokemonService.getByTwoTypes(type1, type2);
+        model.addAttribute("pokemones", resultados);
         model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", pokemones.size());
+        model.addAttribute("limit", resultados.size());
         return "index";
     }
 
     @GetMapping("/filtro")
-    public String filtrar(
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String type,
-            Model model) {
+    public String filtrar(@RequestParam(required = false) String region,
+                          @RequestParam(required = false) String type,
+                          Model model) {
         List<Pokemon> pokemones = pokemonService.getByRegionAndType(region, type);
         model.addAttribute("pokemones", pokemones);
         model.addAttribute("currentOffset", 0);
