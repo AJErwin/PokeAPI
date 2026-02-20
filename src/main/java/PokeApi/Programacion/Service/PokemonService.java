@@ -16,7 +16,7 @@ public class PokemonService {
     private RestTemplate restTemplate;
 
     public List<Pokemon> GetAll(int limit, int offset) {
-        String url = "https://pokeapi.co/api/v2/pokemon?limit=" + limit + "&offset=" + offset; 
+        String url = "https://pokeapi.co/api/v2/pokemon?limit=" + limit + "&offset=" + offset;
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
         List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
 
@@ -31,7 +31,7 @@ public class PokemonService {
             return pokemon;
         }).collect(Collectors.toList());
     }
-    
+
     public List<Pokemon> buscarPokemon(String nombre) {
         String url = "https://pokeapi.co/api/v2/pokemon?limit=1300&offset=0";
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
@@ -53,11 +53,15 @@ public class PokemonService {
     }
 
     public List<Pokemon> getByRegion(String region) {
-        if (region == null || region.isBlank()) return new ArrayList<>();
+        if (region == null || region.isBlank()) {
+            return new ArrayList<>();
+        }
         String regionUrl = "https://pokeapi.co/api/v2/region/" + region;
         Map<String, Object> regionResponse = restTemplate.getForObject(regionUrl, Map.class);
         List<Map<String, Object>> pokedexes = (List<Map<String, Object>>) regionResponse.get("pokedexes");
-        if (pokedexes == null || pokedexes.isEmpty()) return new ArrayList<>();
+        if (pokedexes == null || pokedexes.isEmpty()) {
+            return new ArrayList<>();
+        }
         String pokedexUrl = (String) pokedexes.get(0).get("url");
         Map<String, Object> pokedexResponse = restTemplate.getForObject(pokedexUrl, Map.class);
         List<Map<String, Object>> entries = (List<Map<String, Object>>) pokedexResponse.get("pokemon_entries");
@@ -79,10 +83,14 @@ public class PokemonService {
     }
 
     public List<Pokemon> getByType(String type) {
-        if (type == null || type.isBlank()) return new ArrayList<>();
+        if (type == null || type.isBlank()) {
+            return new ArrayList<>();
+        }
         String url = "https://pokeapi.co/api/v2/type/" + type;
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-        if (response == null || response.get("pokemon") == null) return new ArrayList<>();
+        if (response == null || response.get("pokemon") == null) {
+            return new ArrayList<>();
+        }
         List<Map<String, Object>> pokemonList = (List<Map<String, Object>>) response.get("pokemon");
         List<Pokemon> lista = new ArrayList<>();
         for (Map<String, Object> p : pokemonList) {
@@ -104,15 +112,21 @@ public class PokemonService {
     public List<Pokemon> getByRegionAndType(String region, String type) {
         boolean tieneRegion = region != null && !region.isBlank();
         boolean tieneTipo = type != null && !type.isBlank();
-        if (tieneRegion && !tieneTipo) return getByRegion(region);
-        if (tieneTipo && !tieneRegion) return getByType(type);
+        if (tieneRegion && !tieneTipo) {
+            return getByRegion(region);
+        }
+        if (tieneTipo && !tieneRegion) {
+            return getByType(type);
+        }
         if (tieneRegion && tieneTipo) {
             List<Pokemon> porRegion = getByRegion(region);
             List<Pokemon> porTipo = getByType(type);
             List<Pokemon> resultado = new ArrayList<>();
             for (Pokemon r : porRegion) {
                 for (Pokemon t : porTipo) {
-                    if (r.getId() == t.getId()) resultado.add(r);
+                    if (r.getId() == t.getId()) {
+                        resultado.add(r);
+                    }
                 }
             }
             return resultado;
@@ -121,7 +135,9 @@ public class PokemonService {
     }
 
     public List<Pokemon> getByTwoTypes(String type1, String type2) {
-        if (type1 == null || type1.isBlank() || type2 == null || type2.isBlank()) return new ArrayList<>();
+        if (type1 == null || type1.isBlank() || type2 == null || type2.isBlank()) {
+            return new ArrayList<>();
+        }
         List<Pokemon> lista1 = getByType(type1);
         List<Pokemon> lista2 = getByType(type2);
         return lista1.stream()
