@@ -13,7 +13,7 @@ public class UsuarioDAO {
     private JdbcTemplate jdbcTemplate;
 
     public Usuario getByUsername(String username) {
-        String sql = "SELECT USERNAME, PASSWORD FROM USUARIOS WHERE USERNAME = ?";
+        String sql = "SELECT USERNAME, PASSWORD FROM USUARIO WHERE USERNAME = ?";
         try {
             return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Usuario.class), username);
         } catch (Exception e) {
