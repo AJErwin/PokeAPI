@@ -15,10 +15,15 @@ public class PokemonController {
     @Autowired
     private PokemonService pokemonService;
 
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
     @GetMapping("/pokedex")
     public String getAll(@RequestParam(defaultValue = "22") int limit,
-                         @RequestParam(defaultValue = "0") int offset, 
-                         Model model) {
+            @RequestParam(defaultValue = "0") int offset,
+            Model model) {
         List<Pokemon> pokemones = pokemonService.GetAll(limit, offset);
         model.addAttribute("pokemones", pokemones);
         model.addAttribute("currentOffset", offset);
@@ -46,12 +51,13 @@ public class PokemonController {
 
     @GetMapping("/filtro")
     public String filtrar(@RequestParam(required = false) String region,
-                          @RequestParam(required = false) String type,
-                          Model model) {
+            @RequestParam(required = false) String type,
+            Model model) {
         List<Pokemon> pokemones = pokemonService.getByRegionAndType(region, type);
         model.addAttribute("pokemones", pokemones);
         model.addAttribute("currentOffset", 0);
         model.addAttribute("limit", pokemones.size());
         return "index";
     }
+
 }
