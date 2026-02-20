@@ -21,31 +21,33 @@ public class PokemonController {
     }
 
     @GetMapping("/pokedex")
-    public String getAll(@RequestParam(defaultValue = "22") int limit,
+    public String getAll(@RequestParam(defaultValue = "8") int limit,
             @RequestParam(defaultValue = "0") int offset,
             Model model) {
         List<Pokemon> pokemones = pokemonService.GetAll(limit, offset);
         model.addAttribute("pokemones", pokemones);
         model.addAttribute("currentOffset", offset);
-        model.addAttribute("limit", limit);
+        model.addAttribute("limit", 8);
         return "index";
     }
 
     @GetMapping("/pokedex/buscar")
     public String buscarPokemon(@RequestParam String nombre, Model model) {
         List<Pokemon> resultados = pokemonService.buscarPokemon(nombre);
-        model.addAttribute("pokemones", resultados);
+        List<Pokemon> limitados = resultados.stream().limit(8).toList();
+        model.addAttribute("pokemones", limitados);
         model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", 22);
+        model.addAttribute("limit", 8);
         return "index";
     }
 
     @GetMapping("/pokedex/dual")
     public String buscarDual(@RequestParam String type1, @RequestParam String type2, Model model) {
         List<Pokemon> resultados = pokemonService.getByTwoTypes(type1, type2);
-        model.addAttribute("pokemones", resultados);
+        List<Pokemon> limitados = resultados.stream().limit(8).toList();
+        model.addAttribute("pokemones", limitados);
         model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", resultados.size());
+        model.addAttribute("limit", 8);
         return "index";
     }
 
@@ -53,11 +55,11 @@ public class PokemonController {
     public String filtrar(@RequestParam(required = false) String region,
             @RequestParam(required = false) String type,
             Model model) {
-        List<Pokemon> pokemones = pokemonService.getByRegionAndType(region, type);
-        model.addAttribute("pokemones", pokemones);
+        List<Pokemon> resultados = pokemonService.getByRegionAndType(region, type);
+        List<Pokemon> limitados = resultados.stream().limit(8).toList();
+        model.addAttribute("pokemones", limitados);
         model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", pokemones.size());
+        model.addAttribute("limit", 8);
         return "index";
     }
-
 }

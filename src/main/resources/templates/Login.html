@@ -2,65 +2,139 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Pokedex Login</title>
+    <title>Pokedex - Sistema de Acceso</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Press Start 2P', cursive;
             background-color: #38b0a8;
+            background-image: radial-gradient(#48c0b8 20%, transparent 20%);
+            background-size: 20px 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
-        .login-container {
-            background-color: #f8f8f8;
-            border: 8px solid #585858;
-            border-radius: 15px;
+        .gba-frame {
+            background-color: #4a4a4a;
+            border: 12px solid #333;
+            border-radius: 25px;
             padding: 40px;
-            box-shadow: 0 10px 0 #303030;
-            text-align: center;
+            box-shadow: 0 15px 0 #222;
             width: 450px;
+            position: relative;
         }
-        h2 { font-size: 14px; color: #ff1100; margin-bottom: 30px; text-transform: uppercase; }
+        .gba-screen {
+            background-color: #f8f8f8;
+            border: 8px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+        }
+        .pika-icon {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: #f8d030;
+            font-size: 20px;
+        }
+        .ball-icon {
+            position: absolute;
+            top: 15px;
+            left: 25px;
+            color: #ff1100;
+            font-size: 20px;
+        }
+        h2 {
+            font-size: 12px;
+            color: #ff1100;
+            background: #333;
+            padding: 10px;
+            border: 3px solid #585858;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            line-height: 1.5;
+        }
         .form-control {
             font-family: 'Press Start 2P', cursive;
             font-size: 10px;
-            border: 4px solid #585858;
-            margin-bottom: 20px;
+            background-color: #3d5a5a;
+            color: #fff;
+            border: 3px solid #585858;
+            margin-bottom: 15px;
             height: 45px;
+            border-radius: 0;
+        }
+        .form-control::placeholder { color: #a0c0c0; }
+        .form-control:focus {
+            background-color: #4a6b6b;
+            color: white;
+            box-shadow: none;
+            border-color: #ff1100;
         }
         .btn-retro {
             font-family: 'Press Start 2P', cursive;
-            font-size: 10px;
-            background-color: #ff1100;
+            font-size: 9px;
             color: white;
-            border: 4px solid #800000;
-            padding: 15px;
+            border: 3px solid #000;
+            padding: 12px;
             width: 100%;
-            box-shadow: 0 5px 0 #800000;
-            cursor: pointer;
             text-transform: uppercase;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.1s;
         }
-        .btn-retro:active { transform: translateY(4px); box-shadow: none; }
-        .error-msg { color: #ff1100; font-size: 8px; margin-bottom: 20px; }
+        .btn-login {
+            background-color: #ff1100;
+            box-shadow: 0 4px 0 #800000;
+        }
+        .btn-register {
+            background-color: #ff1100;
+            box-shadow: 0 4px 0 #800000;
+        }
+        .btn-retro:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .error-msg {
+            color: #800000;
+            font-size: 7px;
+            margin-bottom: 15px;
+            background: #ffcccc;
+            padding: 5px;
+            border: 2px solid #800000;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>SISTEMA DE ACCESO POKEDEX</h2>
+
+    <div class="gba-frame">
+        <span class="ball-icon">●</span>
+        <span class="pika-icon">⚡</span>
         
-        <div th:if="${param.error}" class="error-msg">
-            DATOS INCORRECTOS. INTENTA DE NUEVO.
+        <div class="gba-screen">
+            <h2>SISTEMA DE ACCESO POKEDEX</h2>
+            
+            <div th:if="${param.error}" class="error-msg">
+                ERROR: CREDENCIALES NO VALIDAS
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <input type="text" name="username" class="form-control" placeholder="USUARIO" required>
+                <input type="password" name="password" class="form-control" placeholder="PASSWORD" required>
+                
+                <button type="submit" class="btn-retro btn-login">INICIAR SESIÓN</button>
+            </form>
+            
+            <a th:href="@{/registro}" class="text-decoration-none">
+                <button class="btn-retro btn-register">REGISTRARSE</button>
+            </a>
         </div>
-        
-        <form th:action="@{/login}" method="post">
-            <input type="text" name="username" class="form-control" placeholder="USUARIO" required>
-            <input type="password" name="password" class="form-control" placeholder="PASSWORD" required>
-            <button type="submit" class="btn-retro">INICIAR SESIÓN</button>
-        </form>
     </div>
+
 </body>
 </html>
