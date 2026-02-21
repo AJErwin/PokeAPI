@@ -1,5 +1,7 @@
 package PokeApi.Programacion.Service;
 
+import PokeApi.Programacion.DAO.PokemonDAO;
+import PokeApi.Programacion.JPA.Result;
 import PokeApi.Programacion.ML.Pokemon;
 import java.util.ArrayList;
 import java.util.Map;
@@ -14,6 +16,10 @@ public class PokemonService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private PokemonDAO pokemonDAO;
+    
 
     public List<Pokemon> GetAll(int limit, int offset) {
         String url = "https://pokeapi.co/api/v2/pokemon?limit=" + limit + "&offset=" + offset; 
@@ -117,7 +123,7 @@ public class PokemonService {
             }
             return resultado;
         }
-        return GetAll(20, 0);
+        return GetAll(8, 0);
     }
 
     public List<Pokemon> getByTwoTypes(String type1, String type2) {
@@ -128,4 +134,30 @@ public class PokemonService {
                 .filter(p1 -> lista2.stream().anyMatch(p2 -> p1.getId() == p2.getId()))
                 .collect(Collectors.toList());
     }
+
+    public Pokemon getById(int id) {
+        String url = "https://pokeapi.co/api/v2/pokemon/" + id;
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+        Pokemon pokemon = new Pokemon();
+        pokemon.setId(id);
+        pokemon.setNombre((String) response.get("name"));
+        pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
+        
+        List<Map<String, Object>> typesList = (List<Map<String, Object>>) response.get("types");
+        String tipos = typesList.stream()
+                .map(t -> (String) ((Map<String, Object>) t.get("type")).get("name"))
+                .collect(Collectors.joining(", "));
+        pokemon.setTipo(tipos);
+        
+        return pokemon;
+    }
+
+    public Result add(Pokemon pokemon) {
+        return pokemonDAO.Add(pokemon);
+    }
+ 
+
+public Result Guardar(Pokemon pokemon) {
+    return pokemonDAO.Add(pokemon);
+}
 }

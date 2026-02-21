@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -61,5 +62,12 @@ public class PokemonController {
         model.addAttribute("currentOffset", 0);
         model.addAttribute("limit", 8);
         return "index";
+    }
+
+    @GetMapping("/pokedex/detalle/{id}")
+    public String verDetalle(@PathVariable int id, Model model) {
+        Pokemon pokemon = pokemonService.getById(id);
+        model.addAttribute("pokemon", pokemon);
+        return "detalle";
     }
 }

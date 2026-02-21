@@ -4,6 +4,7 @@ public class Pokemon {
     private int id;
     private String nombre;
     private String urlImagen;
+    private String Tipo;
 
     public Pokemon() {}
 
@@ -30,4 +31,14 @@ public class Pokemon {
     public void setUrlImagen(String urlImagen) {
         this.urlImagen = urlImagen;
     }
+
+    public String getTipo() {
+        return Tipo;
+    }
+
+    public void setTipo(String Tipo) {
+        this.Tipo = Tipo;
+    }
+    
+    
 }

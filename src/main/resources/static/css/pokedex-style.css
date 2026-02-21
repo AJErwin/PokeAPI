@@ -120,3 +120,37 @@ h1 {
     50% { transform: scaleY(0.003) scaleX(1); background: white; filter: brightness(5); }
     100% { transform: scale(0); opacity: 0; }
 }
+
+.pokemon-img {
+    height: 80px;
+    image-rendering: pixelated;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+@keyframes appearFromBall {
+    0% { 
+        transform: scale(0) rotate(0deg); 
+        filter: brightness(10); 
+        opacity: 0;
+    }
+    50% { 
+        transform: scale(1.2) rotate(180deg); 
+        filter: brightness(5); 
+        opacity: 1;
+    }
+    100% { 
+        transform: scale(1) rotate(360deg); 
+        filter: brightness(1); 
+        opacity: 1;
+    }
+}
+
+.detail-row {
+    font-size: 10px;
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+    padding-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+}

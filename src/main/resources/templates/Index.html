@@ -116,8 +116,22 @@
                     </div>
                     <img th:src="${pokemon.urlImagen}" class="pokemon-img" style="height: 80px; image-rendering: pixelated; position: relative; z-index: 2;">
                 </div>
-                <div style="font-size: 8px; text-transform: uppercase;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
-                <button class="btn btn-retro mt-2">GUARDAR</button>
+                <div style="font-size: 8px; text-transform: uppercase; margin-bottom: 10px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
+                
+                <div class="d-flex gap-1">
+                    <a th:href="@{/pokedex/detalle/{id}(id=${pokemon.id})}" 
+                       class="btn btn-retro mt-2" 
+                       onclick="captureAnimation(event, this)"
+                       style="text-decoration: none; line-height: 1.5; background-color: #4CAF50;">VER</a>
+                    
+                    <form th:action="@{/pokedex/guardar}" method="post" style="flex-grow: 1;">
+                        <input type="hidden" name="id" th:value="${pokemon.id}">
+                        <input type="hidden" name="nombre" th:value="${pokemon.nombre}">
+                        <input type="hidden" name="tipo" th:value="${pokemon.tipo}">
+                        <input type="hidden" name="urlImagen" th:value="${pokemon.urlImagen}">
+                        <button type="submit" class="btn btn-retro mt-2">GUARDAR</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
