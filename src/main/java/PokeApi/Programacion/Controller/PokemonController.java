@@ -1,14 +1,14 @@
 package PokeApi.Programacion.Controller;
 
+import PokeApi.Programacion.JPA.Result;
 import PokeApi.Programacion.ML.Pokemon;
 import PokeApi.Programacion.Service.PokemonService;
+import java.security.Principal;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class PokemonController {
@@ -69,5 +69,48 @@ public class PokemonController {
         Pokemon pokemon = pokemonService.getById(id);
         model.addAttribute("pokemon", pokemon);
         return "detalle";
+    }
+
+    @GetMapping("/pokedex/perfil")
+    public String verPerfil(Model model, Principal principal) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
+
+        int idUsuario = pokemonService.obtenerIdPorUsername(principal.getName());
+        List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(idUsuario);
+
+        model.addAttribute("favoritos", favoritos);
+        model.addAttribute("usuario", principal.getName());
+        return "perfil";
+    }
+
+    @PostMapping("/pokedex/guardar")
+    @ResponseBody
+    public String guardar(@ModelAttribute Pokemon pokemon, Principal principal) {
+        try {
+            int idUsuario = pokemonService.obtenerIdPorUsername(principal.getName());
+            pokemonService.Guardar(pokemon, idUsuario);
+            return "OK";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    @PostMapping("/pokedex/eliminar")
+    @ResponseBody
+    public String eliminarFavorito(@RequestParam("idPokemon") int idPokemon, Principal principal) {
+        try {
+            int idUsuario = pokemonService.obtenerIdPorUsername(principal.getName());
+            Result result = pokemonService.Delete(idPokemon, idUsuario);
+
+            if (result.Correct) {
+                return "OK";
+            } else {
+                return "Error: " + result.ErrorMessage;
+            }
+        } catch (Exception e) {
+            return "Error al eliminar: " + e.getMessage();
+        }
     }
 }

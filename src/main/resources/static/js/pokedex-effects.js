@@ -41,3 +41,70 @@ function captureAnimation(event, element) {
         window.location.href = url;
     }, 500);
 }
+
+function capturarEnBatalla(btn) {
+    const ballContainer = document.getElementById('pokeball-container');
+    const ball = document.getElementById('animating-ball');
+    const pokemonSprite = document.querySelector('.pokemon-sprite-battle');
+    const dialogText = document.getElementById('dialogText');
+    
+    const id = btn.getAttribute('data-id');
+    const nombre = btn.getAttribute('data-nombre');
+    const urlImg = btn.getAttribute('data-img');
+
+    ballContainer.style.display = 'block';
+    ball.classList.add('throw-animation');
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('nombre', nombre);
+    formData.append('urlImagen', urlImg);
+
+    fetch('/pokedex/guardar', { method: 'POST', body: formData })
+    .then(response => response.text())
+    .then(data => {
+        if (data === "OK") {
+            setTimeout(() => {
+                pokemonSprite.style.opacity = '0';
+                pokemonSprite.style.transition = '0.5s';
+                
+                ball.classList.remove('throw-animation');
+                ball.classList.add('capture-shake');
+
+                setTimeout(() => {
+                    dialogText.innerText = "¡Gotcha! " + nombre.toUpperCase() + " capturado.";
+                    btn.style.display = 'none';
+                }, 1200);
+            }, 800);
+        } else {
+            alert("Error: " + data);
+            ballContainer.style.display = 'none';
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+function eliminarDeFavoritos(btn) {
+    const idPokemon = btn.getAttribute('data-id');
+    const card = btn.closest('.col'); 
+
+    const formData = new FormData();
+    formData.append('idPokemon', idPokemon);
+
+    fetch('/pokedex/eliminar', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        if (data === "OK") {
+            card.style.transition = "0.5s";
+            card.style.opacity = "0";
+            card.style.transform = "scale(0.8)";
+            setTimeout(() => card.remove(), 500); 
+        } else {
+            alert("Error al liberar: " + data);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}

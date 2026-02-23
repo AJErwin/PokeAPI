@@ -8,16 +8,46 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/pokedex-style.css}">
     <script th:src="@{/js/pokedex-effects.js}" defer></script>
+    <script>
+        function ejecutarGuardado(btn) {
+            // Leemos los datos desde los atributos data-* del botón
+            const id = btn.getAttribute('data-id');
+            const nombre = btn.getAttribute('data-nombre');
+            
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('nombre', nombre);
+            formData.append('urlImagen', `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`);
+
+            fetch('/pokedex/guardar', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('¡' + nombre.toUpperCase() + ' añadido a favoritos!');
+                } else {
+                    alert('Error al guardar.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 </head>
 <body>
 
 <div class="container pokedex-container" id="pokedexWrapper">
-    <div class="header-container">
+    <div class="header-container d-flex justify-content-between align-items-center">
         <h1>POKEDEX SYSTEM</h1>
-        <div class="logout-container">
-            <form th:action="@{/logout}" method="post" id="logoutForm">
-                <button type="button" class="btn-salir" onclick="shutDownTV()">SALIR</button>
-            </form>
+        <div class="d-flex gap-2">
+            <a th:href="@{/pokedex/perfil}" class="btn-retro" style="background-color: #38b0a8; text-decoration: none; padding: 10px; width: auto; display: flex; align-items: center;">
+                FAVORITOS
+            </a>
+            <div class="logout-container">
+                <form th:action="@{/logout}" method="post" id="logoutForm">
+                    <button type="button" class="btn-salir" onclick="shutDownTV()">SALIR</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -124,13 +154,14 @@
                        onclick="captureAnimation(event, this)"
                        style="text-decoration: none; line-height: 1.5; background-color: #4CAF50;">VER</a>
                     
-                    <form th:action="@{/pokedex/guardar}" method="post" style="flex-grow: 1;">
-                        <input type="hidden" name="id" th:value="${pokemon.id}">
-                        <input type="hidden" name="nombre" th:value="${pokemon.nombre}">
-                        <input type="hidden" name="tipo" th:value="${pokemon.tipo}">
-                        <input type="hidden" name="urlImagen" th:value="${pokemon.urlImagen}">
-                        <button type="submit" class="btn btn-retro mt-2">GUARDAR</button>
-                    </form>
+                    <div style="flex-grow: 1;">
+                        <button type="button" class="btn btn-retro mt-2" 
+                                th:data-id="${pokemon.id}"
+                                th:data-nombre="${pokemon.nombre}"
+                                onclick="ejecutarGuardado(this)">
+                            FAVORITO
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
