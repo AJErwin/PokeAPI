@@ -8,31 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/pokedex-style.css}">
     <script th:src="@{/js/pokedex-effects.js}" defer></script>
-    <script>
-        function ejecutarGuardado(btn) {
-            // Leemos los datos desde los atributos data-* del botón
-            const id = btn.getAttribute('data-id');
-            const nombre = btn.getAttribute('data-nombre');
-            
-            const formData = new FormData();
-            formData.append('id', id);
-            formData.append('nombre', nombre);
-            formData.append('urlImagen', `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`);
-
-            fetch('/pokedex/guardar', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('¡' + nombre.toUpperCase() + ' añadido a favoritos!');
-                } else {
-                    alert('Error al guardar.');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
 </head>
 <body>
 
@@ -158,7 +133,8 @@
                         <button type="button" class="btn btn-retro mt-2" 
                                 th:data-id="${pokemon.id}"
                                 th:data-nombre="${pokemon.nombre}"
-                                onclick="ejecutarGuardado(this)">
+                                th:data-img="${pokemon.urlImagen}"
+                                onclick="capturarEnBatalla(this)">
                             FAVORITO
                         </button>
                     </div>
@@ -174,5 +150,6 @@
     </div>
 </div>
 
+</script>
 </body>
 </html>

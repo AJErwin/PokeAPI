@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @Controller
 public class PokemonController {
@@ -22,15 +23,19 @@ public class PokemonController {
     }
 
     @GetMapping("/pokedex")
-    public String getAll(@RequestParam(defaultValue = "8") int limit,
-            @RequestParam(defaultValue = "0") int offset,
-            Model model) {
-        List<Pokemon> pokemones = pokemonService.GetAll(limit, offset);
-        model.addAttribute("pokemones", pokemones);
-        model.addAttribute("currentOffset", offset);
-        model.addAttribute("limit", 8);
-        return "index";
-    }
+public String mostrarPokedex(
+        @RequestParam(defaultValue = "8") int limit,
+        @RequestParam(defaultValue = "0") int offset,
+        Model model) {
+
+    Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+    
+    model.addAttribute("pokemones", apiResult.Objects);
+    model.addAttribute("currentOffset", offset);
+    model.addAttribute("limit", 8);
+
+    return "index";
+}
 
     @GetMapping("/pokedex/buscar")
     public String buscarPokemon(@RequestParam String nombre, Model model) {

@@ -130,21 +130,9 @@ h1 {
 }
 
 @keyframes appearFromBall {
-    0% { 
-        transform: scale(0) rotate(0deg); 
-        filter: brightness(10); 
-        opacity: 0;
-    }
-    50% { 
-        transform: scale(1.2) rotate(180deg); 
-        filter: brightness(5); 
-        opacity: 1;
-    }
-    100% { 
-        transform: scale(1) rotate(360deg); 
-        filter: brightness(1); 
-        opacity: 1;
-    }
+    0% { transform: scale(0) rotate(0deg); filter: brightness(10); opacity: 0; }
+    50% { transform: scale(1.2) rotate(180deg); filter: brightness(5); opacity: 1; }
+    100% { transform: scale(1) rotate(360deg); filter: brightness(1); opacity: 1; }
 }
 
 .detail-row {
@@ -154,7 +142,6 @@ h1 {
     display: flex;
     justify-content: space-between;
 }
-
 
 #pokeball-container {
     position: absolute;
@@ -199,13 +186,8 @@ h1 {
     z-index: 1;
 }
 
-.throw-animation {
-    animation: throwBall 1s ease-out forwards;
-}
-
-.capture-shake {
-    animation: shake 0.3s ease-in-out 3;
-}
+.throw-animation { animation: throwBall 1s ease-out forwards; }
+.capture-shake { animation: shake 0.3s ease-in-out 3; }
 
 @keyframes throwBall {
     0% { transform: translate(-200%, 200%) scale(0.5) rotate(0deg); }
@@ -217,3 +199,4 @@ h1 {
     25% { transform: translateX(-8px) rotate(-10deg); }
     75% { transform: translateX(8px) rotate(10deg); }
 }
+
