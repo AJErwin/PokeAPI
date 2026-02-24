@@ -1,10 +1,15 @@
 package PokeApi.Programacion.ML;
 
+import java.util.List;
+
 public class Pokemon {
     private int id;
     private String nombre;
     private String urlImagen;
+    private String urlImagenShiny; 
     private String Tipo;
+    private List<Integer> estadisticas; 
+    private List<String> movimientos; 
 
     public Pokemon() {}
 
@@ -32,6 +37,14 @@ public class Pokemon {
         this.urlImagen = urlImagen;
     }
 
+    public String getUrlImagenShiny() {
+        return urlImagenShiny;
+    }
+
+    public void setUrlImagenShiny(String urlImagenShiny) {
+        this.urlImagenShiny = urlImagenShiny;
+    }
+
     public String getTipo() {
         return Tipo;
     }
@@ -39,6 +52,20 @@ public class Pokemon {
     public void setTipo(String Tipo) {
         this.Tipo = Tipo;
     }
-    
-    
+
+    public List<Integer> getEstadisticas() {
+        return estadisticas;
+    }
+
+    public void setEstadisticas(List<Integer> estadisticas) {
+        this.estadisticas = estadisticas;
+    }
+
+    public List<String> getMovimientos() {
+        return movimientos;
+    }
+
+    public void setMovimientos(List<String> movimientos) {
+        this.movimientos = movimientos;
+    }
 }

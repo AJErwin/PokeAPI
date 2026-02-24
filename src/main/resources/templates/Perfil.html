@@ -32,13 +32,22 @@
                 <div style="font-size: 10px; text-transform: uppercase; margin-bottom: 5px;" th:text="${fav.nombre}"></div>
                 <div style="font-size: 8px; color: #666; margin-bottom: 10px;" th:text="'ID: ' + ${fav.id}"></div>
                 
-                <button type="button" 
-                        class="btn-retro" 
-                        style="background-color: #585858; font-size: 7px;"
-                        th:data-id="${fav.id}"
-                        onclick="eliminarDeFavoritos(this)">
-                    LIBERAR
-                </button>
+                <div class="d-flex gap-1">
+                    <a th:href="@{/pokedex/detalle/{id}(id=${fav.id})}" 
+                       class="btn-retro" 
+                       style="background-color: #4CAF50; text-decoration: none; font-size: 7px; display: flex; align-items: center; justify-content: center;"
+                       onclick="captureAnimation(event, this)">
+                        VER
+                    </a>
+
+                    <button type="button" 
+                            class="btn-retro" 
+                            style="background-color: #585858; font-size: 7px;"
+                            th:data-id="${fav.id}"
+                            onclick="eliminarDeFavoritos(this)">
+                        LIBERAR
+                    </button>
+                </div>
             </div>
         </div>
     </div>

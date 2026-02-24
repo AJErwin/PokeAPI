@@ -62,6 +62,7 @@ public class PokemonService {
                 .collect(Collectors.toList());
     }
 
+    // --- MÉTODOS DE FILTRADO POR REGIÓN Y TIPO ---
     public List<Pokemon> getByRegion(String region) {
         if (region == null || region.isBlank()) return new ArrayList<>();
         String regionUrl = "https://pokeapi.co/api/v2/region/" + region;
@@ -101,8 +102,7 @@ public class PokemonService {
             Map<String, Object> poke = (Map<String, Object>) p.get("pokemon");
             String name = (String) poke.get("name");
             String pokeUrl = (String) poke.get("url");
-            String cleanUrl = pokeUrl.endsWith("/") ? pokeUrl.substring(0, pokeUrl.length() - 1) : pokeUrl;
-            String idStr = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
+            String idStr = pokeUrl.split("/")[pokeUrl.split("/").length - 1];
             int id = Integer.parseInt(idStr);
             Pokemon pokemon = new Pokemon();
             pokemon.setId(id);
@@ -143,16 +143,34 @@ public class PokemonService {
         Pokemon pokemon = new Pokemon();
         pokemon.setId(id);
         pokemon.setNombre((String) response.get("name"));
-        pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
 
+        List<Map<String, Object>> statsList = (List<Map<String, Object>>) response.get("stats");
+        List<Integer> statsValores = statsList.stream()
+                .map(s -> (Integer) s.get("base_stat"))
+                .collect(Collectors.toList());
+        pokemon.setEstadisticas(statsValores); 
+        
+        List<Map<String, Object>> movesList = (List<Map<String, Object>>) response.get("moves");
+        List<String> movimientos = movesList.stream()
+                .limit(10)
+                .map(m -> (String) ((Map<String, Object>) m.get("move")).get("name"))
+                .collect(Collectors.toList());
+        pokemon.setMovimientos(movimientos); 
+
+        Map<String, Object> sprites = (Map<String, Object>) response.get("sprites");
+        pokemon.setUrlImagen((String) sprites.get("front_default"));
+        pokemon.setUrlImagenShiny((String) ((Map<String, Object>) sprites).get("front_shiny"));
+        
         List<Map<String, Object>> typesList = (List<Map<String, Object>>) response.get("types");
         String tipos = typesList.stream()
                 .map(t -> (String) ((Map<String, Object>) t.get("type")).get("name"))
                 .collect(Collectors.joining(", "));
         pokemon.setTipo(tipos);
+
         return pokemon;
     }
 
+    // --- PERSISTENCIA ORACLE ---
     public int obtenerIdPorUsername(String username) {
         return pokemonDAO.obtenerIdPorNombre(username);
     }

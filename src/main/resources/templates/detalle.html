@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/pokedex-style.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script th:src="@{/js/pokedex-effects.js}" defer></script>
     <style>
         body, html {
@@ -40,6 +41,14 @@
             max-width: 450px;
             box-shadow: 8px 8px 0 #bcbcbc;
             z-index: 10;
+            transition: max-height 0.4s ease-out;
+            max-height: 140px; 
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .wild-pkmn-info.expanded {
+            max-height: 600px; 
         }
 
         .hp-bar-container {
@@ -76,6 +85,7 @@
             width: 30vw;
             max-width: 400px;
             z-index: 5;
+            transition: opacity 0.2s ease;
             animation: appearFromBall 0.8s ease-out, bouncePkmn 2s infinite 0.8s ease-in-out;
         }
 
@@ -94,6 +104,30 @@
             align-items: center;
             z-index: 10;
             box-sizing: border-box;
+        }
+
+        .btn-tab-mini {
+            font-family: 'Press Start 2P';
+            font-size: 8px;
+            background: #585858;
+            color: white;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .btn-tab-mini.active { 
+            background: #38b0a8; 
+        }
+        
+        .mini-content { 
+            display: none; 
+            margin-top: 15px; 
+        }
+        
+        .active-content { 
+            display: block; 
         }
 
         @keyframes bouncePkmn {
@@ -127,20 +161,52 @@
 <body>
 
 <div class="battle-scene">
-    <div class="wild-pkmn-info">
+    <div class="wild-pkmn-info" id="infoPanel" onclick="toggleDetails()">
         <div class="d-flex justify-content-between" style="font-family: 'Press Start 2P'; color: #333;">
-            <span th:text="${pokemon.nombre.toUpperCase()}"></span>
+            <span id="displayName" th:text="${pokemon.nombre.toUpperCase()}"></span>
             <span th:text="'Lv' + (${pokemon.id} % 100 + 1)"></span>
         </div>
         <div class="hp-bar-container">
             <div class="hp-fill"></div>
         </div>
-        <div style="font-size: 12px; color: #585858; text-align: right; margin-top: 5px; font-family: 'Press Start 2P';">HP</div>
+        <div style="font-size: 10px; color: #585858; text-align: right; margin-top: 5px; font-family: 'Press Start 2P';">PULSA PARA DATOS ▼</div>
+
+        <div id="extraData" style="display: none; margin-top: 20px; border-top: 4px solid #585858; padding-top: 15px;">
+            <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                <button class="btn-tab-mini active" onclick="event.stopPropagation(); switchTab('miniStats')">STATS</button>
+                <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniMoves')">MOVES</button>
+                <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniForms')">FORMS</button>
+            </div>
+
+            <div id="miniStats" class="mini-content active-content">
+                <div style="position: relative; height: 200px;">
+                    <canvas id="statsChart"></canvas>
+                </div>
+            </div>
+
+            <div id="miniMoves" class="mini-content">
+                <div style="font-family: 'Press Start 2P'; font-size: 8px; color: #333; line-height: 1.8;">
+                    <span th:each="move : ${pokemon.movimientos}" th:text="'- ' + ${move.toUpperCase()}" style="display: block;"></span>
+                </div>
+            </div>
+
+            <div id="miniForms" class="mini-content">
+                <div style="display: flex; justify-content: space-around; text-align: center; font-family: 'Press Start 2P'; font-size: 8px; color: #333;">
+                    <div th:onclick="event.stopPropagation(); changeMainModel([[${pokemon.urlImagen}]], false)" style="cursor:pointer;">
+                        <p>NORMAL</p>
+                        <img th:src="${pokemon.urlImagen}" style="height: 80px; image-rendering: pixelated;">
+                    </div>
+                    <div th:onclick="event.stopPropagation(); changeMainModel([[${pokemon.urlImagenShiny}]], true)" style="cursor:pointer;">
+                        <p style="color: #b08800;">SHINY</p>
+                        <img th:src="${pokemon.urlImagenShiny}" style="height: 80px; image-rendering: pixelated;">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="platform"></div>
-    
-    <img th:src="${pokemon.urlImagen}" class="pokemon-sprite-battle">
+    <img th:src="${pokemon.urlImagen}" class="pokemon-sprite-battle" id="mainPkmn">
 
     <div id="pokeball-container">
         <div class="pokeball" id="animating-ball"></div>
@@ -161,5 +227,147 @@
     </div>
 </div>
 
+<script th:inline="javascript">
+    let myChart = null;
+    const statsData = [[${pokemon.estadisticas}]];
+
+    function toggleDetails() {
+        const info = document.getElementById('infoPanel');
+        const extra = document.getElementById('extraData');
+        info.classList.toggle('expanded');
+        const isExpanded = info.classList.contains('expanded');
+        extra.style.display = isExpanded ? 'block' : 'none';
+        
+        if (isExpanded) {
+            setTimeout(initChart, 50);
+        }
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.mini-content').forEach(c => c.classList.remove('active-content'));
+        document.querySelectorAll('.btn-tab-mini').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active-content');
+        event.target.classList.add('active');
+        if (tabId === 'miniStats') setTimeout(initChart, 10);
+    }
+
+    function changeMainModel(url, isShiny) {
+        const mainPkmn = document.getElementById('mainPkmn');
+        const nameLabel = document.getElementById('displayName');
+        if (mainPkmn) {
+            mainPkmn.style.opacity = '0';
+            setTimeout(() => {
+                mainPkmn.src = url;
+                mainPkmn.style.opacity = '1';
+                if (nameLabel) nameLabel.style.color = isShiny ? '#b08800' : '#333';
+            }, 200);
+        }
+    }
+
+    function initChart() {
+        const ctx = document.getElementById('statsChart');
+        if (!ctx) return;
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx.getContext('2d'), {
+            type: 'radar',
+            data: {
+                labels: ['HP', 'ATK', 'DEF', 'SAT', 'SDF', 'SPD'],
+                datasets: [{
+                    data: statsData,
+                    backgroundColor: 'rgba(56, 176, 168, 0.4)',
+                    borderColor: '#38b0a8',
+                    borderWidth: 2,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#585858' },
+                        grid: { color: '#585858' },
+                        pointLabels: { font: { family: 'Press Start 2P', size: 6 } },
+                        suggestedMin: 0,
+                        suggestedMax: 150,
+                        ticks: { display: false }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // --- FUNCIÓN DE CAPTURA AÑADIDA AQUÍ ---
+    function capturarEnBatalla(btn) {
+        const ballContainer = document.getElementById('pokeball-container');
+        const ball = document.getElementById('animating-ball');
+        const pokemonSprite = document.getElementById('mainPkmn');
+        const dialogText = document.getElementById('dialogText');
+        const infoPanel = document.getElementById('infoPanel');
+        
+        const id = btn.getAttribute('data-id');
+        const nombre = btn.getAttribute('data-nombre');
+        const urlImg = btn.getAttribute('data-img');
+
+        // Cierra el panel de stats si está abierto
+        if (infoPanel !== null && infoPanel.classList.contains('expanded')) {
+            toggleDetails(); 
+        }
+
+        // Lanza la pokeball
+        if (ballContainer && ball) {
+            ballContainer.style.display = 'block';
+            ball.classList.add('throw-animation');
+        }
+
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('nombre', nombre);
+        formData.append('urlImagen', urlImg);
+
+        fetch('/pokedex/guardar', { method: 'POST', body: formData })
+        .then(response => response.text())
+        .then(data => {
+            if (data === "OK") {
+                setTimeout(() => {
+                    // Animación del sprite
+                    if (pokemonSprite) {
+                        pokemonSprite.style.transition = '0.5s';
+                        pokemonSprite.style.opacity = '0';
+                        pokemonSprite.style.transform = 'scale(0.1) rotate(360deg)';
+                    }
+                    
+                    // Shake de la pokeball
+                    if (ball) {
+                        ball.classList.remove('throw-animation');
+                        ball.classList.add('capture-shake');
+                    }
+
+                    setTimeout(() => {
+                        if (dialogText) {
+                            dialogText.innerText = "¡Gotcha! " + nombre.toUpperCase() + " capturado.";
+                        }
+                        btn.innerText = "ATRAPADO";
+                        btn.disabled = true;
+                        btn.style.backgroundColor = "#585858";
+                        
+                        setTimeout(() => {
+                            if (ballContainer) ballContainer.style.opacity = '0';
+                        }, 1000);
+                    }, 1200);
+                }, 800);
+            } else {
+                alert("Error: " + data);
+                if (ballContainer) ballContainer.style.display = 'none';
+            }
+        })
+        .catch(err => {
+            console.error("Error capturando:", err);
+            if (ballContainer) ballContainer.style.display = 'none';
+        });
+    }
+</script>
 </body>
 </html>
