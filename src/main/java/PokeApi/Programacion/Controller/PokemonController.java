@@ -1,5 +1,6 @@
 package PokeApi.Programacion.Controller;
 
+import PokeApi.Programacion.DAO.UsuarioDAO;
 import PokeApi.Programacion.JPA.Result;
 import PokeApi.Programacion.ML.Pokemon;
 import PokeApi.Programacion.Service.PokemonService;
@@ -17,25 +18,28 @@ public class PokemonController {
     @Autowired
     private PokemonService pokemonService;
 
+    @Autowired
+    private UsuarioDAO usuarioDAO;
+
     @GetMapping("/login")
     public String login() {
         return "login";
     }
 
     @GetMapping("/pokedex")
-public String mostrarPokedex(
+    public String mostrarPokedex(
         @RequestParam(defaultValue = "8") int limit,
         @RequestParam(defaultValue = "0") int offset,
         Model model) {
 
-    Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
-    
-    model.addAttribute("pokemones", apiResult.Objects);
-    model.addAttribute("currentOffset", offset);
-    model.addAttribute("limit", 8);
+        Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+        
+        model.addAttribute("pokemones", apiResult.Objects);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", 8);
 
-    return "index";
-}
+        return "index";
+    }
 
     @GetMapping("/pokedex/buscar")
     public String buscarPokemon(@RequestParam String nombre, Model model) {
@@ -117,5 +121,32 @@ public String mostrarPokedex(
         } catch (Exception e) {
             return "Error al eliminar: " + e.getMessage();
         }
+    }
+    
+    @GetMapping("/registro")
+    public String mostrarRegistro() {
+        return "registro";
+    }
+
+    @PostMapping("/registro")
+    public String procesarRegistro(@RequestParam String username, 
+                                   @RequestParam String correo, 
+                                   @RequestParam String password, 
+                                   Model model) {
+        
+        if (usuarioDAO.getByCorreo(correo) != null) {
+            model.addAttribute("error", "EL CORREO YA ESTA EN USO");
+            return "registro";
+        }
+
+        int resultado = usuarioDAO.guardarUsuario(username, correo, password);
+        
+        if (resultado > 0) {
+            model.addAttribute("exito", "CUENTA CREADA. VUELVE AL LOGIN.");
+        } else {
+            model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
+        }
+        
+        return "registro";
     }
 }

@@ -5,16 +5,22 @@ public class Usuario {
     private int idUsuario;
     private String username;
     private String password;
-    private String nombre;
+    private String correo;
+    private String fecharegistro;
+    private int status;
+    private int rolusuario;
 
     public Usuario() {
     }
 
-    public Usuario(int idUsuario, String username, String password, String nombre) {
+    public Usuario(int idUsuario, String username, String password, String correo, String fecharegistro, int status, int rolusuario) {
         this.idUsuario = idUsuario;
         this.username = username;
         this.password = password;
-        this.nombre = nombre;
+        this.correo = correo;
+        this.fecharegistro = fecharegistro;
+        this.status = status;
+        this.rolusuario = rolusuario;
     }
 
     public int getIdUsuario() {
@@ -41,11 +47,35 @@ public class Usuario {
         this.password = password;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getCorreo() {
+        return correo;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getFecharegistro() {
+        return fecharegistro;
+    }
+
+    public void setFecharegistro(String fecharegistro) {
+        this.fecharegistro = fecharegistro;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public int getRolusuario() {
+        return rolusuario;
+    }
+
+    public void setRolusuario(int rolusuario) {
+        this.rolusuario = rolusuario;
     }
 }

@@ -1,3 +1,26 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('pokedexTheme');
+    if (savedTheme) {
+        setSceneTheme(savedTheme);
+    }
+});
+
+function setSceneTheme(theme) {
+    document.body.classList.remove('theme-night', 'theme-gameboy');
+    if (theme !== 'default') {
+        document.body.classList.add('theme-' + theme);
+    }
+    localStorage.setItem('pokedexTheme', theme);
+}
+
+function setSpriteStyle(style) {
+    const pkmn = document.getElementById('mainPkmn');
+    if (!pkmn) return;
+    pkmn.classList.remove('sprite-retro', 'sprite-shadow');
+    if (style === 'retro') pkmn.classList.add('sprite-retro');
+    if (style === 'shadow') pkmn.classList.add('sprite-shadow');
+}
+
 let myChart = null;
 
 function updateBg() {
@@ -57,7 +80,6 @@ function capturarEnBatalla(btn) {
     const nombre = btn.getAttribute('data-nombre');
     const urlImg = btn.getAttribute('data-img');
 
-    // Solución aquí: Asegurarse de que infoPanel exista antes de intentar usar classList
     if (infoPanel !== null && infoPanel !== undefined) {
         if (infoPanel.classList.contains('expanded')) {
             toggleDetails(); 
@@ -125,6 +147,10 @@ function eliminarDeFavoritos(btn) {
     .then(response => response.text())
     .then(data => {
         if (data === "OK") {
+            let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
+            captured = captured.filter(id => id !== idPokemon.toString());
+            localStorage.setItem('myCapturedPkmn', JSON.stringify(captured));
+
             if (card) {
                 card.style.transition = "0.5s";
                 card.style.opacity = "0";
@@ -137,8 +163,6 @@ function eliminarDeFavoritos(btn) {
     })
     .catch(error => console.error('Error:', error));
 }
-
-// --- FUNCIONES PARA VISTA DE DETALLE ---
 
 function toggleDetails() {
     const info = document.getElementById('infoPanel');

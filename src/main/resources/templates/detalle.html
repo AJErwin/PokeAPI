@@ -5,9 +5,9 @@
     <title th:text="'SALVAJE: ' + ${pokemon.nombre}"></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/pokedex-style.css}">
+    <link rel="stylesheet" th:href="@{/css/pokedex-style.css?v=8}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script th:src="@{/js/pokedex-effects.js}" defer></script>
+    <script th:src="@{/js/pokedex-effects.js?v=8}" defer></script>
     <style>
         body, html {
             margin: 0;
@@ -27,18 +27,19 @@
             image-rendering: pixelated;
             display: flex;
             flex-direction: column;
+            transition: background 0.5s ease;
         }
 
         .wild-pkmn-info {
             position: absolute;
-            top: 10%;
+            top: 5%;
             left: 5%;
             background-color: #f8f8d8;
             border: 6px solid #585858;
             border-radius: 0 0 30px 0;
             padding: 20px;
-            width: 40%;
-            max-width: 450px;
+            width: 50%;
+            max-width: 600px;
             box-shadow: 8px 8px 0 #bcbcbc;
             z-index: 10;
             transition: max-height 0.4s ease-out;
@@ -48,7 +49,8 @@
         }
 
         .wild-pkmn-info.expanded {
-            max-height: 600px; 
+            max-height: 75vh;
+            overflow-y: auto;
         }
 
         .hp-bar-container {
@@ -76,6 +78,7 @@
             background: radial-gradient(#60c860 60%, #98d8a8 100%);
             border-radius: 50%;
             z-index: 1;
+            transition: background 0.5s ease;
         }
 
         .pokemon-sprite-battle {
@@ -85,7 +88,7 @@
             width: 30vw;
             max-width: 400px;
             z-index: 5;
-            transition: opacity 0.2s ease;
+            transition: opacity 0.2s ease, filter 0.3s ease;
             animation: appearFromBall 0.8s ease-out, bouncePkmn 2s infinite 0.8s ease-in-out;
         }
 
@@ -104,6 +107,7 @@
             align-items: center;
             z-index: 10;
             box-sizing: border-box;
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
         }
 
         .btn-tab-mini {
@@ -150,6 +154,7 @@
             font-family: 'Press Start 2P';
             cursor: pointer;
             box-shadow: 4px 4px 0 #000;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .btn-action:active {
@@ -160,9 +165,9 @@
 </head>
 <body>
 
-<div class="battle-scene">
+<div class="battle-scene" id="mainScene">
     <div class="wild-pkmn-info" id="infoPanel" onclick="toggleDetails()">
-        <div class="d-flex justify-content-between" style="font-family: 'Press Start 2P'; color: #333;">
+        <div id="nameHeader" style="display: flex; justify-content: space-between; font-family: 'Press Start 2P'; padding: 15px; margin: -20px -20px 15px -20px; border-bottom: 4px solid #585858; color: white; text-shadow: 2px 2px 0 #000; background: #585858;">
             <span id="displayName" th:text="${pokemon.nombre.toUpperCase()}"></span>
             <span th:text="'Lv' + (${pokemon.id} % 100 + 1)"></span>
         </div>
@@ -172,14 +177,15 @@
         <div style="font-size: 10px; color: #585858; text-align: right; margin-top: 5px; font-family: 'Press Start 2P';">PULSA PARA DATOS ▼</div>
 
         <div id="extraData" style="display: none; margin-top: 20px; border-top: 4px solid #585858; padding-top: 15px;">
-            <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+            <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
                 <button class="btn-tab-mini active" onclick="event.stopPropagation(); switchTab('miniStats')">STATS</button>
                 <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniMoves')">MOVES</button>
                 <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniForms')">FORMS</button>
+                <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniStyle')">ESTILO</button>
             </div>
 
             <div id="miniStats" class="mini-content active-content">
-                <div style="position: relative; height: 200px;">
+                <div style="position: relative; height: 250px;"> 
                     <canvas id="statsChart"></canvas>
                 </div>
             </div>
@@ -194,11 +200,36 @@
                 <div style="display: flex; justify-content: space-around; text-align: center; font-family: 'Press Start 2P'; font-size: 8px; color: #333;">
                     <div th:onclick="event.stopPropagation(); changeMainModel([[${pokemon.urlImagen}]], false)" style="cursor:pointer;">
                         <p>NORMAL</p>
-                        <img th:src="${pokemon.urlImagen}" style="height: 80px; image-rendering: pixelated;">
+                        <img th:src="${pokemon.urlImagen}" style="height: 100px; image-rendering: pixelated;">
                     </div>
                     <div th:onclick="event.stopPropagation(); changeMainModel([[${pokemon.urlImagenShiny}]], true)" style="cursor:pointer;">
                         <p style="color: #b08800;">SHINY</p>
-                        <img th:src="${pokemon.urlImagenShiny}" style="height: 80px; image-rendering: pixelated;">
+                        <img th:src="${pokemon.urlImagenShiny}" style="height: 100px; image-rendering: pixelated;">
+                    </div>
+                </div>
+            </div>
+
+            <div id="miniStyle" class="mini-content">
+                <div style="text-align: center; font-family: 'Press Start 2P'; font-size: 8px; color: #333;">
+                    <p style="margin-bottom: 10px;">DISEÑO DE IMAGEN</p>
+                    <div style="display: flex; gap: 5px; justify-content: center; margin-bottom: 20px;">
+                        <button class="btn-tab-mini" style="background:#4a90e2;" onclick="event.stopPropagation(); setArtStyle('pixel')">PIXEL</button>
+                        <button class="btn-tab-mini" style="background:#e67e22;" onclick="event.stopPropagation(); setArtStyle('hd')">HD</button>
+                        <button class="btn-tab-mini" style="background:#9b59b6;" onclick="event.stopPropagation(); setArtStyle('gif')">ANIMADO</button>
+                    </div>
+
+                    <p style="margin-bottom: 10px;">FILTRO CSS</p>
+                    <div style="display: flex; gap: 5px; justify-content: center; margin-bottom: 20px;">
+                        <button class="btn-tab-mini" style="background:#ff1100;" onclick="event.stopPropagation(); setSpriteStyle('normal')">NORMAL</button>
+                        <button class="btn-tab-mini" style="background:#8bac0f; color:#0f380f;" onclick="event.stopPropagation(); setSpriteStyle('retro')">RETRO</button>
+                        <button class="btn-tab-mini" style="background:#111;" onclick="event.stopPropagation(); setSpriteStyle('shadow')">SOMBRA</button>
+                    </div>
+
+                    <p style="margin-bottom: 10px;">TEMA DE LA PÁGINA</p>
+                    <div style="display: flex; gap: 5px; justify-content: center;">
+                        <button class="btn-tab-mini" style="background:#38b0a8;" onclick="event.stopPropagation(); setSceneTheme('default')">DÍA</button>
+                        <button class="btn-tab-mini" style="background:#304860;" onclick="event.stopPropagation(); setSceneTheme('night')">NOCHE</button>
+                        <button class="btn-tab-mini" style="background:#306230;" onclick="event.stopPropagation(); setSceneTheme('gameboy')">GB</button>
                     </div>
                 </div>
             </div>
@@ -212,7 +243,16 @@
         <div class="pokeball" id="animating-ball"></div>
     </div>
 
-    <div class="dialog-box">
+    <div id="namingScreen" style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="background: #f8f8f8; border: 6px solid #585858; padding: 30px; text-align: center; box-shadow: 8px 8px 0 #000; width: 80%; max-width: 450px;">
+            <p id="namingQuestion" style="font-family: 'Press Start 2P'; font-size: 14px; line-height: 1.8; color: #333; margin-bottom: 25px;"></p>
+            <input type="text" id="nicknameInput" maxlength="12" style="font-family: 'Press Start 2P'; font-size: 18px; padding: 15px; border: 4px solid #585858; width: 80%; text-align: center; text-transform: uppercase; margin-bottom: 25px; outline: none;">
+            <br>
+            <button id="btnSaveNickname" class="btn-action" style="font-size: 14px; padding: 15px 30px;">ACEPTAR</button>
+        </div>
+    </div>
+
+    <div class="dialog-box" id="mainDialog">
         <div id="dialogText" style="font-family: 'Press Start 2P';" th:text="'¡Un ' + ${pokemon.nombre.toUpperCase()} + ' salvaje!'"></div>
         <div class="btn-group-battle">
             <button id="btnCapturar" type="button" class="btn-action" 
@@ -230,6 +270,8 @@
 <script th:inline="javascript">
     let myChart = null;
     const statsData = [[${pokemon.estadisticas}]];
+    const pkmnId = [[${pokemon.id}]];
+    let isCurrentShiny = false;
 
     function toggleDetails() {
         const info = document.getElementById('infoPanel');
@@ -254,14 +296,46 @@
     function changeMainModel(url, isShiny) {
         const mainPkmn = document.getElementById('mainPkmn');
         const nameLabel = document.getElementById('displayName');
+        isCurrentShiny = isShiny;
+        
         if (mainPkmn) {
             mainPkmn.style.opacity = '0';
             setTimeout(() => {
                 mainPkmn.src = url;
                 mainPkmn.style.opacity = '1';
-                if (nameLabel) nameLabel.style.color = isShiny ? '#b08800' : '#333';
+                if (nameLabel) nameLabel.style.color = isShiny ? '#b08800' : '#fff';
             }, 200);
         }
+    }
+
+    function setArtStyle(type) {
+        const mainPkmn = document.getElementById('mainPkmn');
+        if (!mainPkmn) return;
+
+        mainPkmn.style.opacity = '0';
+        
+        setTimeout(() => {
+            let baseUrl = '';
+            if (type === 'pixel') {
+                baseUrl = isCurrentShiny 
+                    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pkmnId}.png`
+                    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmnId}.png`;
+                mainPkmn.style.imageRendering = 'pixelated';
+            } else if (type === 'hd') {
+                baseUrl = isCurrentShiny 
+                    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${pkmnId}.png`
+                    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pkmnId}.png`;
+                mainPkmn.style.imageRendering = 'auto';
+            } else if (type === 'gif') {
+                baseUrl = isCurrentShiny 
+                    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/shiny/${pkmnId}.gif`
+                    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${pkmnId}.gif`;
+                mainPkmn.style.imageRendering = 'pixelated';
+            }
+            
+            mainPkmn.src = baseUrl;
+            mainPkmn.style.opacity = '1';
+        }, 200);
     }
 
     function initChart() {
@@ -299,7 +373,6 @@
         });
     }
 
-    // --- FUNCIÓN DE CAPTURA AÑADIDA AQUÍ ---
     function capturarEnBatalla(btn) {
         const ballContainer = document.getElementById('pokeball-container');
         const ball = document.getElementById('animating-ball');
@@ -307,67 +380,148 @@
         const dialogText = document.getElementById('dialogText');
         const infoPanel = document.getElementById('infoPanel');
         
+        const namingScreen = document.getElementById('namingScreen');
+        const namingQuestion = document.getElementById('namingQuestion');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const btnSaveNickname = document.getElementById('btnSaveNickname');
+        
         const id = btn.getAttribute('data-id');
-        const nombre = btn.getAttribute('data-nombre');
+        const nombreOriginal = btn.getAttribute('data-nombre');
         const urlImg = btn.getAttribute('data-img');
 
-        // Cierra el panel de stats si está abierto
         if (infoPanel !== null && infoPanel.classList.contains('expanded')) {
             toggleDetails(); 
         }
 
-        // Lanza la pokeball
         if (ballContainer && ball) {
             ballContainer.style.display = 'block';
             ball.classList.add('throw-animation');
         }
 
-        const formData = new FormData();
-        formData.append('id', id);
-        formData.append('nombre', nombre);
-        formData.append('urlImagen', urlImg);
-
-        fetch('/pokedex/guardar', { method: 'POST', body: formData })
-        .then(response => response.text())
-        .then(data => {
-            if (data === "OK") {
-                setTimeout(() => {
-                    // Animación del sprite
-                    if (pokemonSprite) {
-                        pokemonSprite.style.transition = '0.5s';
-                        pokemonSprite.style.opacity = '0';
-                        pokemonSprite.style.transform = 'scale(0.1) rotate(360deg)';
-                    }
-                    
-                    // Shake de la pokeball
-                    if (ball) {
-                        ball.classList.remove('throw-animation');
-                        ball.classList.add('capture-shake');
-                    }
-
-                    setTimeout(() => {
-                        if (dialogText) {
-                            dialogText.innerText = "¡Gotcha! " + nombre.toUpperCase() + " capturado.";
-                        }
-                        btn.innerText = "ATRAPADO";
-                        btn.disabled = true;
-                        btn.style.backgroundColor = "#585858";
-                        
-                        setTimeout(() => {
-                            if (ballContainer) ballContainer.style.opacity = '0';
-                        }, 1000);
-                    }, 1200);
-                }, 800);
-            } else {
-                alert("Error: " + data);
-                if (ballContainer) ballContainer.style.display = 'none';
+        setTimeout(() => {
+            if (pokemonSprite) {
+                pokemonSprite.style.transition = '0.5s';
+                pokemonSprite.style.opacity = '0';
+                pokemonSprite.style.transform = 'scale(0.1) rotate(360deg)';
             }
-        })
-        .catch(err => {
-            console.error("Error capturando:", err);
-            if (ballContainer) ballContainer.style.display = 'none';
-        });
+            
+            if (ball) {
+                ball.classList.remove('throw-animation');
+                ball.classList.add('capture-shake');
+            }
+
+            setTimeout(() => {
+                namingQuestion.innerText = `¡Atrapaste a ${nombreOriginal.toUpperCase()}!\n\n¿Quieres darle un apodo?`;
+                nicknameInput.value = nombreOriginal.toUpperCase();
+                namingScreen.style.display = 'flex';
+                nicknameInput.focus();
+
+                btnSaveNickname.onclick = function() {
+                    let apodo = nicknameInput.value.trim();
+                    if (apodo === "") {
+                        apodo = nombreOriginal.toUpperCase();
+                    }
+
+                    namingScreen.style.display = 'none';
+
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('nombre', apodo);
+                    formData.append('urlImagen', urlImg);
+
+                    fetch('/pokedex/guardar', { method: 'POST', body: formData })
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data === "OK") {
+                            let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
+                            if (!captured.includes(id.toString())) {
+                                captured.push(id.toString());
+                                localStorage.setItem('myCapturedPkmn', JSON.stringify(captured));
+                            }
+
+                            if (dialogText) {
+                                dialogText.innerText = `¡${apodo.toUpperCase()} se ha unido a tu equipo!`;
+                            }
+                            btn.innerText = "ATRAPADO";
+                            btn.disabled = true;
+                            btn.style.backgroundColor = "#585858";
+                            
+                            setTimeout(() => {
+                                if (ballContainer) ballContainer.style.opacity = '0';
+                            }, 1000);
+                        } else {
+                            alert("Error: " + data);
+                            if (ballContainer) ballContainer.style.display = 'none';
+                            if (pokemonSprite) {
+                                pokemonSprite.style.opacity = '1';
+                                pokemonSprite.style.transform = 'scale(1) rotate(0deg)';
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        if (ballContainer) ballContainer.style.display = 'none';
+                    });
+                };
+            }, 1000);
+
+        }, 800);
     }
+
+    function setSceneTheme(theme) {
+        document.body.classList.remove('theme-night', 'theme-gameboy');
+        if (theme !== 'default') {
+            document.body.classList.add('theme-' + theme);
+        }
+        localStorage.setItem('pokedexTheme', theme);
+    }
+
+    function setSpriteStyle(style) {
+        const pkmn = document.getElementById('mainPkmn');
+        if (!pkmn) return;
+        pkmn.classList.remove('sprite-retro', 'sprite-shadow');
+        if (style === 'retro') pkmn.classList.add('sprite-retro');
+        if (style === 'shadow') pkmn.classList.add('sprite-shadow');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('pokedexTheme');
+        if (savedTheme) {
+            setSceneTheme(savedTheme);
+        }
+
+        let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
+        if (captured.includes(pkmnId.toString())) {
+            const btn = document.getElementById('btnCapturar');
+            if (btn) {
+                btn.innerText = "ATRAPADO";
+                btn.disabled = true;
+                btn.style.backgroundColor = "#585858";
+            }
+        }
+
+        const typeColors = {
+            normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
+            grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1',
+            ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A',
+            rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705848',
+            steel: '#B7B7CE', fairy: '#D685AD'
+        };
+
+        fetch(`https://pokeapi.co/api/v2/pokemon/${pkmnId}`)
+            .then(res => res.json())
+            .then(data => {
+                const types = data.types;
+                const header = document.getElementById('nameHeader');
+                if (header) {
+                    if (types.length === 1) {
+                        header.style.background = typeColors[types[0].type.name];
+                    } else {
+                        header.style.background = `linear-gradient(135deg, ${typeColors[types[0].type.name]} 50%, ${typeColors[types[1].type.name]} 50%)`;
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+    });
 </script>
 </body>
 </html>
