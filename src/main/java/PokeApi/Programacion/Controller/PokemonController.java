@@ -4,10 +4,12 @@ import PokeApi.Programacion.DAO.UsuarioDAO;
 import PokeApi.Programacion.JPA.Result;
 import PokeApi.Programacion.ML.Pokemon;
 import PokeApi.Programacion.ML.Usuario;
+import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
 import java.security.Principal;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,12 @@ public class PokemonController {
 
     @Autowired
     private UsuarioDAO usuarioDAO;
+
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login() {
@@ -148,16 +156,15 @@ public class PokemonController {
             return "registro";
         }
 
-        int resultado = usuarioDAO.guardarUsuario(username, correo, password);
+        String passwordEncriptado = passwordEncoder.encode(password);
+
+        int resultado = usuarioDAO.guardarUsuario(username, correo, passwordEncriptado);
 
         if (resultado > 0) {
 
             Usuario usuario = usuarioDAO.getByCorreo(correo);
 
-            emailVerificationService.createToken(
-                    usuario.getIdUsuario(),
-                    correo
-            );
+            emailVerificationService.createToken(usuario.getIdUsuario(), correo);
 
             model.addAttribute("exito",
                     "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
