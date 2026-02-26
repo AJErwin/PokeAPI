@@ -59,4 +59,10 @@ public class UsuarioDAO {
             return new java.util.ArrayList<>();
         }
     }
+
+    public int guardarUsuario(String username, String correo, String password) {
+        String sql = "INSERT INTO USUARIO (USERNAME, PASSWORD, CORREO, FECHAREGISTRO, STATUS, ROLUSUARIO) VALUES (?, ?, ?, SYSDATE, 0, 2)";
+        return jdbcTemplate.update(sql, username, password, correo);
+    }
+    
 }

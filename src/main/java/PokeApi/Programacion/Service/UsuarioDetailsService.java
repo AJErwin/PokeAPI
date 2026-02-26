@@ -20,9 +20,13 @@ public class UsuarioDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
         Usuario usuario = usuarioDAO.getByCorreo(correo);
-        
+
         if (usuario == null) {
             throw new UsernameNotFoundException("Correo no encontrado");
+        }
+
+        if (usuario.getStatus() == 0) {
+            throw new RuntimeException("Cuenta no verificada");
         }
 
         return User.builder()

@@ -28,12 +28,12 @@ public class PokemonController {
 
     @GetMapping("/pokedex")
     public String mostrarPokedex(
-        @RequestParam(defaultValue = "8") int limit,
-        @RequestParam(defaultValue = "0") int offset,
-        Model model) {
+            @RequestParam(defaultValue = "8") int limit,
+            @RequestParam(defaultValue = "0") int offset,
+            Model model) {
 
         Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
-        
+
         model.addAttribute("pokemones", apiResult.Objects);
         model.addAttribute("currentOffset", offset);
         model.addAttribute("limit", 8);
@@ -131,44 +131,67 @@ public class PokemonController {
             return "Error al eliminar: " + e.getMessage();
         }
     }
-    
+
     @GetMapping("/registro")
     public String mostrarRegistro() {
         return "registro";
     }
 
     @PostMapping("/registro")
-    public String procesarRegistro(@RequestParam String username, 
-                                   @RequestParam String correo, 
-                                   @RequestParam String password, 
-                                   Model model) {
-        
+    public String procesarRegistro(@RequestParam String username,
+            @RequestParam String correo,
+            @RequestParam String password,
+            Model model) {
+
         if (usuarioDAO.getByCorreo(correo) != null) {
             model.addAttribute("error", "EL CORREO YA ESTA EN USO");
             return "registro";
         }
 
         int resultado = usuarioDAO.guardarUsuario(username, correo, password);
-        
+
         if (resultado > 0) {
-            model.addAttribute("exito", "CUENTA CREADA. VUELVE AL LOGIN.");
+
+            Usuario usuario = usuarioDAO.getByCorreo(correo);
+
+            emailVerificationService.createToken(
+                    usuario.getIdUsuario(),
+                    correo
+            );
+
+            model.addAttribute("exito",
+                    "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
         } else {
             model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
         }
-        
+
         return "registro";
     }
-    
+
     @GetMapping("/pokedex/usuarios")
     public String verUsuarios(Model model) {
         List<Usuario> usuarios = usuarioDAO.getAllUsuarios();
-        
+
         for (Usuario usuario : usuarios) {
             List<Pokemon> favs = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
             usuario.setFavoritos(favs);
         }
-        
+
         model.addAttribute("usuarios", usuarios);
         return "usuarios";
+    }
+
+    @GetMapping("/verify")
+    public String verificarCuenta(@RequestParam("token") String token, Model model) {
+
+        boolean valido = emailVerificationService.validateToken(token);
+
+        if (valido) {
+            model.addAttribute("exito", "CUENTA ACTIVADA CORRECTAMENTE");
+        } else {
+            model.addAttribute("error", "TOKEN INVALIDO O EXPIRADO");
+        }
+
+        return "login";
     }
 }
