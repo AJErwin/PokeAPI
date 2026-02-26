@@ -3,15 +3,26 @@ package PokeApi.Programacion.ML;
 import java.util.List;
 
 public class Pokemon {
+
     private int id;
     private String nombre;
     private String urlImagen;
-    private String urlImagenShiny; 
+    private String urlImagenShiny;
     private String Tipo;
-    private List<Integer> estadisticas; 
-    private List<String> movimientos; 
+    private List<Integer> estadisticas;
+    private List<String> movimientos;
+    private int cantidadFavoritos;
 
-    public Pokemon() {}
+    public int getCantidadFavoritos() {
+        return cantidadFavoritos;
+    }
+
+    public void setCantidadFavoritos(int cantidadFavoritos) {
+        this.cantidadFavoritos = cantidadFavoritos;
+    }
+
+    public Pokemon() {
+    }
 
     public int getId() {
         return id;

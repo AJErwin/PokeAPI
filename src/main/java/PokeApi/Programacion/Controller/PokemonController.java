@@ -3,6 +3,7 @@ package PokeApi.Programacion.Controller;
 import PokeApi.Programacion.DAO.UsuarioDAO;
 import PokeApi.Programacion.JPA.Result;
 import PokeApi.Programacion.ML.Pokemon;
+import PokeApi.Programacion.ML.Usuario;
 import PokeApi.Programacion.Service.PokemonService;
 import java.security.Principal;
 import java.util.List;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 
 @Controller
 public class PokemonController {
@@ -86,11 +86,20 @@ public class PokemonController {
             return "redirect:/login";
         }
 
-        int idUsuario = pokemonService.obtenerIdPorUsername(principal.getName());
-        List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(idUsuario);
+        Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+        List<Pokemon> favoritos;
+        boolean esAdmin = false;
+
+        if (usuario.getRolusuario() == 1) {
+            favoritos = usuarioDAO.getFavoritosGlobales();
+            esAdmin = true;
+        } else {
+            favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+        }
 
         model.addAttribute("favoritos", favoritos);
-        model.addAttribute("usuario", principal.getName());
+        model.addAttribute("usuario", usuario.getUsername());
+        model.addAttribute("esAdmin", esAdmin);
         return "perfil";
     }
 
@@ -98,8 +107,8 @@ public class PokemonController {
     @ResponseBody
     public String guardar(@ModelAttribute Pokemon pokemon, Principal principal) {
         try {
-            int idUsuario = pokemonService.obtenerIdPorUsername(principal.getName());
-            pokemonService.Guardar(pokemon, idUsuario);
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            pokemonService.Guardar(pokemon, usuario.getIdUsuario());
             return "OK";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
@@ -110,8 +119,8 @@ public class PokemonController {
     @ResponseBody
     public String eliminarFavorito(@RequestParam("idPokemon") int idPokemon, Principal principal) {
         try {
-            int idUsuario = pokemonService.obtenerIdPorUsername(principal.getName());
-            Result result = pokemonService.Delete(idPokemon, idUsuario);
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            Result result = pokemonService.Delete(idPokemon, usuario.getIdUsuario());
 
             if (result.Correct) {
                 return "OK";
@@ -148,5 +157,18 @@ public class PokemonController {
         }
         
         return "registro";
+    }
+    
+    @GetMapping("/pokedex/usuarios")
+    public String verUsuarios(Model model) {
+        List<Usuario> usuarios = usuarioDAO.getAllUsuarios();
+        
+        for (Usuario usuario : usuarios) {
+            List<Pokemon> favs = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+            usuario.setFavoritos(favs);
+        }
+        
+        model.addAttribute("usuarios", usuarios);
+        return "usuarios";
     }
 }

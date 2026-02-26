@@ -62,7 +62,6 @@ public class PokemonService {
                 .collect(Collectors.toList());
     }
 
-    // --- MÉTODOS DE FILTRADO POR REGIÓN Y TIPO ---
     public List<Pokemon> getByRegion(String region) {
         if (region == null || region.isBlank()) return new ArrayList<>();
         String regionUrl = "https://pokeapi.co/api/v2/region/" + region;
@@ -170,7 +169,6 @@ public class PokemonService {
         return pokemon;
     }
 
-    // --- PERSISTENCIA ORACLE ---
     public int obtenerIdPorUsername(String username) {
         return pokemonDAO.obtenerIdPorNombre(username);
     }

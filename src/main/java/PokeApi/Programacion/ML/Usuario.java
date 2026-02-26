@@ -1,5 +1,7 @@
 package PokeApi.Programacion.ML;
 
+import java.util.List;
+
 public class Usuario {
 
     private int idUsuario;
@@ -9,6 +11,7 @@ public class Usuario {
     private String fecharegistro;
     private int status;
     private int rolusuario;
+    private List<Pokemon> favoritos;
 
     public Usuario() {
     }
@@ -77,5 +80,13 @@ public class Usuario {
 
     public void setRolusuario(int rolusuario) {
         this.rolusuario = rolusuario;
+    }
+
+    public List<Pokemon> getFavoritos() {
+        return favoritos;
+    }
+
+    public void setFavoritos(List<Pokemon> favoritos) {
+        this.favoritos = favoritos;
     }
 }
