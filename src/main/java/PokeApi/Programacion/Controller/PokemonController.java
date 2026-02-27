@@ -25,29 +25,11 @@ public class PokemonController {
     @Autowired
     private UsuarioDAO usuarioDAO;
 
-    @ModelAttribute("capturados")
-    public List<Integer> obtenerCapturados(Principal principal) {
-        if (principal == null) {
-            return new java.util.ArrayList<>();
-        }
-        Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
-        if (usuario != null) {
-            return pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario())
-                    .stream()
-                    .map(Pokemon::getId)
-                    .toList();
-        }
-        return new java.util.ArrayList<>();
-    }
+    @Autowired
+    private EmailVerificationService emailVerificationService;
 
-    @ModelAttribute("esAdmin")
-    public boolean verificarAdmin(Principal principal) {
-        if (principal == null) {
-            return false;
-        }
-        Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
-        return usuario != null && usuario.getRolusuario() == 1;
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/login")
     public String login() {
