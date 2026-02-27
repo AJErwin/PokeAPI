@@ -161,6 +161,15 @@
             transform: translate(2px, 2px);
             box-shadow: 2px 2px 0 #000;
         }
+
+        #pokeball-container {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
@@ -498,6 +507,12 @@
                 btn.style.backgroundColor = "#585858";
             }
         }
+
+        const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/${pkmnId}.ogg`);
+        cry.volume = 0.4;
+        cry.play().catch(err => {
+            console.log("El navegador bloqueó el audio automático.");
+        });
 
         const typeColors = {
             normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
