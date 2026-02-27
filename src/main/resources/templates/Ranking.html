@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokedex - Ranking Global</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #38b0a8;
+            padding: 20px;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .ranking-header {
+            background: #f8f8f8;
+            border: 8px solid #585858;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .ranking-title {
+            font-size: 16px;
+            color: #e3350d;
+            text-shadow: 2px 2px 0px #ccc;
+            margin: 0;
+        }
+        .btn-retro {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            color: white;
+            background-color: #38b0a8;
+            border: 4px solid #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 4px 4px 0 #000;
+            cursor: pointer;
+        }
+        .btn-retro:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #000;
+        }
+        .filter-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .form-select {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            border: 4px solid #585858;
+            border-radius: 0;
+            padding: 10px;
+            height: auto;
+        }
+        .pokemon-card {
+            background: #fff;
+            border: 6px solid #585858;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+            height: 100%;
+            position: relative;
+        }
+        .rank-badge {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            background: #585858;
+            color: white;
+            padding: 10px;
+            border: 4px solid #000;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            z-index: 5;
+        }
+        .card-oro { border-color: #ffd700; }
+        .card-oro .rank-badge { background: #ffd700; color: #000; }
+        
+        .card-plata { border-color: #c0c0c0; }
+        .card-plata .rank-badge { background: #c0c0c0; color: #000; }
+        
+        .card-bronce { border-color: #cd7f32; }
+        .card-bronce .rank-badge { background: #cd7f32; color: #fff; }
+
+        .img-container {
+            background: #e0e0e0;
+            border-radius: 5px;
+            padding: 15px 0;
+            margin-bottom: 15px;
+            margin-top: 15px;
+            border: 2px solid #ccc;
+        }
+        .pokemon-card img {
+            width: 80px;
+            height: 80px;
+            image-rendering: pixelated;
+        }
+        .pkmn-name {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .capture-count {
+            background: #e3350d;
+            color: white;
+            padding: 10px;
+            border: 4px solid #000;
+            font-size: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    
+    <div class="ranking-header">
+        <h1 class="ranking-title">RANKING DE CAPTURAS</h1>
+        
+        <form th:action="@{/pokedex/ranking}" method="get" class="filter-form">
+            <select name="orden" class="form-select" onchange="this.form.submit()">
+                <option value="desc" th:selected="${ordenActual == 'desc'}">MAYOR A MENOR</option>
+                <option value="asc" th:selected="${ordenActual == 'asc'}">MENOR A MAYOR</option>
+            </select>
+        </form>
+        
+        <a th:href="@{/pokedex}" class="btn-retro" style="background-color: #585858;">VOLVER</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <div class="col" th:each="pokemon, stat : ${ranking}">
+            <div class="pokemon-card" 
+                 th:classappend="${ordenActual == 'desc'} ? 
+                                (${stat.index == 0} ? 'card-oro' : 
+                                (${stat.index == 1} ? 'card-plata' : 
+                                (${stat.index == 2} ? 'card-bronce' : ''))) : ''">
+                
+                <div class="rank-badge" th:text="'#' + (${stat.index} + 1)"></div>
+                
+                <div class="img-container">
+                    <img th:src="${pokemon.urlImagen}" alt="Pokemon">
+                </div>
+                
+                <div class="pkmn-name" th:text="${pokemon.nombre}"></div>
+                
+                <div class="capture-count">
+                    TOTAL: <span th:text="${pokemon.cantidadFavoritos}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:if="${#lists.isEmpty(ranking)}" class="text-center mt-5" style="color: white; font-size: 12px; background: #000; padding: 20px; border: 4px solid #fff;">
+        NO HAY DATOS DE CAPTURAS AÚN.
+    </div>
+
+</div>
+</body>
+</html>

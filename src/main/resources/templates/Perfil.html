@@ -2,7 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Pokedex - Favoritos</title>
+    <title>Pokedex - Mis Pokémon</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -11,15 +11,56 @@
             font-family: 'Press Start 2P', cursive;
             background-color: #38b0a8;
             padding: 20px;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-        .header-container {
-            background: #f8f8f8;
+        .trainer-card {
+            background: linear-gradient(135deg, #f8f8f8 60%, #e0e0e0 100%);
             border: 8px solid #585858;
-            padding: 20px;
-            border-radius: 10px;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .trainer-card::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            background-color: #e3350d;
+            border: 4px solid #000;
+            border-radius: 50%;
+        }
+        .trainer-title {
+            font-size: 16px;
+            color: #333;
+            border-bottom: 4px dashed #999;
+            padding-bottom: 15px;
             margin-bottom: 20px;
-            text-align: center;
-            box-shadow: 8px 8px 0 #000;
+            text-align: left;
+            text-transform: uppercase;
+        }
+        .trainer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .stat-box {
+            background: #333;
+            color: #fff;
+            padding: 12px 20px;
+            border: 4px solid #000;
+            font-size: 10px;
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.5);
+        }
+        .stat-box span {
+            color: #f8d030;
         }
         .btn-retro {
             font-family: 'Press Start 2P', cursive;
@@ -27,60 +68,140 @@
             color: white;
             background-color: #38b0a8;
             border: 4px solid #000;
-            padding: 10px 20px;
+            padding: 12px 20px;
             text-decoration: none;
             display: inline-block;
             box-shadow: 4px 4px 0 #000;
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-align: center;
+            cursor: pointer;
         }
         .btn-retro:active {
             transform: translate(2px, 2px);
             box-shadow: 2px 2px 0 #000;
         }
+        .btn-back {
+            background-color: #585858;
+        }
         .pokemon-card {
             background: #fff;
-            border: 4px solid #585858;
+            border: 6px solid #585858;
             border-radius: 10px;
             padding: 15px;
             text-align: center;
-            box-shadow: 4px 4px 0 #000;
-            margin-bottom: 20px;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .pokemon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.4);
+            border-color: #e3350d;
+        }
+        .img-container {
+            background: #e0e0e0;
+            border-radius: 5px;
+            padding: 15px 0;
+            margin-bottom: 15px;
+            border: 2px solid #ccc;
+            position: relative;
+            overflow: hidden;
+        }
+        .img-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            z-index: 1;
         }
         .pokemon-card img {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             image-rendering: pixelated;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s;
+        }
+        .pokemon-card:hover img {
+            transform: scale(1.15);
+        }
+        .pkmn-name {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #333;
+            margin-bottom: 15px;
+            background: #f8f8f8;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-release {
+            background-color: #e3350d;
+            width: 100%;
+            margin-top: auto;
+        }
+        .btn-release:hover {
+            background-color: #cc2f0b;
+        }
+        .empty-state {
+            background: rgba(255,255,255,0.9);
+            border: 6px dashed #585858;
+            padding: 50px 20px;
+            text-align: center;
+            border-radius: 15px;
+            margin-top: 40px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.3);
+        }
+        .empty-state p {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.8;
+            margin: 0;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header-container">
-        <h2 th:text="'ENTRENADOR: ' + ${usuario}" style="font-size: 16px;"></h2>
-        <h3 th:if="${esAdmin}" style="color: #ff1100; font-size: 12px; margin-top: 15px;">(RANKING GLOBAL - MODO ADMIN)</h3>
-        <a th:href="@{/pokedex}" class="btn-retro" style="margin-top: 15px;">VOLVER</a>
+    
+    <div class="trainer-card">
+        <div class="trainer-title" th:text="'TARJETA DE ENTRENADOR: ' + ${usuario}"></div>
+        <div class="trainer-info">
+            <div class="stat-box">
+                CAPTURADOS: <span th:text="${#lists.size(favoritos)}"></span>
+            </div>
+            <a th:href="@{/pokedex}" class="btn-retro btn-back">VOLVER A POKEDEX</a>
+        </div>
     </div>
 
-    <div class="row row-cols-2 row-cols-md-4 g-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         <div class="col" th:each="pokemon : ${favoritos}">
             <div class="pokemon-card">
-                <img th:src="${pokemon.urlImagen}" alt="Pokemon">
-                <div style="font-size: 10px; text-transform: uppercase; margin-top: 10px;" th:text="${pokemon.nombre}"></div>
-                
-                <div th:if="${esAdmin}" style="font-size: 10px; color: #ff1100; margin-top: 15px; background: #e0e0e0; padding: 10px; border: 2px solid #585858;">
-                    CAPTURAS: <span th:text="${pokemon.cantidadFavoritos}"></span>
+                <div class="img-container">
+                    <img th:src="${pokemon.urlImagen}" alt="Pokemon">
                 </div>
+                
+                <div class="pkmn-name" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
 
-                <form th:unless="${esAdmin}" th:action="@{/pokedex/eliminar}" method="post" style="margin-top: 15px;">
+                <form th:action="@{/pokedex/eliminar}" method="post">
                     <input type="hidden" name="idPokemon" th:value="${pokemon.id}">
-                    <button type="submit" class="btn-retro" style="background-color: #ff1100; width: 100%;">LIBERAR</button>
+                    <button type="submit" class="btn-retro btn-release">LIBERAR</button>
                 </form>
             </div>
         </div>
-        
-        <div th:if="${#lists.isEmpty(favoritos)}" class="col-12 text-center" style="color: white; font-size: 12px; margin-top: 50px;">
-            <p>NO HAY POKÉMON EN ESTA LISTA AÚN.</p>
-        </div>
     </div>
+    
+    <div th:if="${#lists.isEmpty(favoritos)}" class="empty-state">
+        <p>AÚN NO HAS CAPTURADO NINGÚN POKÉMON.<br><br>¡VE A LA HIERBA ALTA Y ATRAPA ALGUNOS!</p>
+    </div>
+
 </div>
 </body>
 </html>

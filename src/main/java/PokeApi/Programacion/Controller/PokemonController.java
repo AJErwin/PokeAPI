@@ -6,7 +6,9 @@ import PokeApi.Programacion.ML.Pokemon;
 import PokeApi.Programacion.ML.Usuario;
 import PokeApi.Programacion.Service.PokemonService;
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +22,30 @@ public class PokemonController {
 
     @Autowired
     private UsuarioDAO usuarioDAO;
+
+    @ModelAttribute("capturados")
+    public List<Integer> obtenerCapturados(Principal principal) {
+        if (principal == null) {
+            return new java.util.ArrayList<>();
+        }
+        Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+        if (usuario != null) {
+            return pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario())
+                    .stream()
+                    .map(Pokemon::getId)
+                    .toList();
+        }
+        return new java.util.ArrayList<>();
+    }
+
+    @ModelAttribute("esAdmin")
+    public boolean verificarAdmin(Principal principal) {
+        if (principal == null) {
+            return false;
+        }
+        Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+        return usuario != null && usuario.getRolusuario() == 1;
+    }
 
     @GetMapping("/login")
     public String login() {
@@ -87,19 +113,10 @@ public class PokemonController {
         }
 
         Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
-        List<Pokemon> favoritos;
-        boolean esAdmin = false;
-
-        if (usuario.getRolusuario() == 1) {
-            favoritos = usuarioDAO.getFavoritosGlobales();
-            esAdmin = true;
-        } else {
-            favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
-        }
+        List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
 
         model.addAttribute("favoritos", favoritos);
         model.addAttribute("usuario", usuario.getUsername());
-        model.addAttribute("esAdmin", esAdmin);
         return "perfil";
     }
 
@@ -171,4 +188,58 @@ public class PokemonController {
         model.addAttribute("usuarios", usuarios);
         return "usuarios";
     }
+
+    @GetMapping("/pokedex/usuarios/editar/{id}")
+    public String mostrarFormularioEditar(@PathVariable("id") int id, Model model) {
+        Usuario usuario = usuarioDAO.getById(id);
+        if (usuario == null) {
+            return "redirect:/pokedex/usuarios";
+        }
+        model.addAttribute("usuario", usuario);
+        return "EditarUsuarios";
+    }
+
+    @PostMapping("/pokedex/usuarios/editar")
+    public String guardarEdicionUsuario(@ModelAttribute Usuario usuario) {
+        usuarioDAO.updateUsuario(usuario);
+        return "redirect:/pokedex/usuarios";
+    }
+
+   @GetMapping("/pokedex/ranking")
+    public String verRanking(@RequestParam(name = "orden", defaultValue = "desc") String orden, Model model) {
+        List<Pokemon> ranking = usuarioDAO.getFavoritosGlobales(orden);
+        
+        for (Pokemon pokemon : ranking) {
+            Pokemon datosApi = pokemonService.getById(pokemon.getId());
+            if (datosApi != null) {
+                pokemon.setNombre(datosApi.getNombre());
+                pokemon.setUrlImagen(datosApi.getUrlImagen());
+            } else {
+                pokemon.setNombre("???");
+                pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + pokemon.getId() + ".png");
+            }
+        }
+        
+        model.addAttribute("ranking", ranking);
+        model.addAttribute("ordenActual", orden);
+        return "ranking";
+    }
+    @GetMapping("/pokedex/api/trivia-dia")
+@ResponseBody
+public Pokemon getTriviaJson() {
+    int idAleatorio = (int) (Math.random() * 1350) + 1;
+    return pokemonService.getPokemonPorId(idAleatorio); 
 }
+
+@PostMapping("/pokedex/api/trivia-validar")
+@ResponseBody
+public java.util.Map<String, Object> validarTrivia(@RequestParam String nombreIntento, @RequestParam int idPokemon) {
+    Pokemon p = pokemonService.getPokemonPorId(idPokemon);
+    boolean esCorrecto = p.getNombre().equalsIgnoreCase(nombreIntento.trim());
+    
+    java.util.Map<String, Object> respuesta = new java.util.HashMap<>();
+    respuesta.put("success", esCorrecto);
+    respuesta.put("nombreReal", p.getNombre().toUpperCase());
+    return respuesta;
+}
+}   

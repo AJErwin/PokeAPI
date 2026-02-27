@@ -184,4 +184,15 @@ public class PokemonService {
     public Result Delete(int idPokemon, int idUsuario) {
         return pokemonDAO.Delete(idPokemon, idUsuario);
     }
+
+
+    public Pokemon getPokemonPorId(int idAleatorio) {
+    Pokemon pokemon = getById(idAleatorio);
+    
+    if (pokemon != null) {
+        pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + idAleatorio + ".png");
+    }
+    
+    return pokemon;
+}
 }

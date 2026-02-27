@@ -1,307 +1,365 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Pokedex GBA - Sistema de Gestión</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/pokedex-style.css?v=21}">
-    <script th:src="@{/js/pokedex-effects.js?v=21}" defer></script>
-    <style>
-        #intro-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #000;
-            z-index: 10000;
-            display: none; 
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            cursor: pointer;
-            overflow: hidden;
-        }
-        #intro-video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-        .fade-out {
-            animation: fadeOutEffect 1.2s forwards;
-        }
-        @keyframes fadeOutEffect {
-            from { opacity: 1; }
-            to { opacity: 0; visibility: hidden; }
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-    </style>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Pokedex GBA - Sistema de Gestión</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+        <link rel="stylesheet" th:href="@{/css/pokedex-style.css?v=21}">
+        <script th:src="@{/js/pokedex-effects.js?v=21}" defer></script>
+        <style>
+            #intro-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: #000;
+                z-index: 10000;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                cursor: pointer;
+                overflow: hidden;
+            }
+            #intro-video {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                pointer-events: none;
+            }
+            .fade-out {
+                animation: fadeOutEffect 1.2s forwards;
+            }
+            @keyframes fadeOutEffect {
+                from { opacity: 1; }
+                to { opacity: 0; visibility: hidden; }
+            }
+            @keyframes blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0; }
+            }
+        </style>
+    </head>
+    <body>
 
-<div id="intro-container" onclick="startApp()">
-    <video id="intro-video" autoplay muted playsinline preload="auto">
-        <source src="/videos/intro.mp4" type="video/mp4">
-    </video>
-    <div style="position: absolute; bottom: 10%; color: white; font-family: 'Press Start 2P'; font-size: 12px; animation: blink 1s infinite; z-index: 10001; text-shadow: 2px 2px #000;">
-        PRESIONA PARA EMPEZAR
-    </div>
-</div>
-
-<div class="container pokedex-container" id="pokedexWrapper">
-    <div class="header-container d-flex justify-content-between align-items-center">
-        <h1>POKEDEX SYSTEM</h1>
-        <div class="d-flex gap-2">
-            <a th:href="@{/pokedex/usuarios}" class="btn-retro" style="background-color: #38b0a8; text-decoration: none; padding: 10px; width: auto; display: flex; align-items: center;">
-                USUARIOS
-            </a>
-            <a th:href="@{/pokedex/perfil}" class="btn-retro" style="background-color: #38b0a8; text-decoration: none; padding: 10px; width: auto; display: flex; align-items: center;">
-                FAVORITOS
-            </a>
-            <div class="logout-container">
-                <form th:action="@{/logout}" method="post" id="logoutForm">
-                    <button type="button" class="btn-salir" onclick="sessionStorage.removeItem('introPlayed'); shutDownTV();">SALIR</button>
-                </form>
+        <div id="intro-container" onclick="startApp()">
+            <video id="intro-video" autoplay muted playsinline preload="auto">
+                <source src="/videos/intro.mp4" type="video/mp4">
+            </video>
+            <div style="position: absolute; bottom: 10%; color: white; font-family: 'Press Start 2P'; font-size: 12px; animation: blink 1s infinite; z-index: 10001; text-shadow: 2px 2px #000;">
+                PRESIONA PARA EMPEZAR
             </div>
         </div>
-    </div>
 
-    <div class="filter-bar">
-        <div class="row g-2">
-            <div class="col-md-3">
-                <div class="filter-section" style="background: #ddd;">
-                    <span class="section-title">NOMBRE</span>
-                    <form th:action="@{/pokedex/buscar}" method="get" class="d-flex flex-column gap-2">
-                        <input type="text" name="nombre" class="form-control" placeholder="NOMBRE..."/>
-                        <button type="submit" class="btn-retro">OK</button>
-                    </form>
-                </div>
-            </div>
+        <div class="container pokedex-container" id="pokedexWrapper">
+            <div class="header-container d-flex justify-content-between align-items-center">
+                <h1>POKEDEX SYSTEM</h1>
+                <div class="d-flex gap-2">
+                    <button onclick="cargarTrivia()" class="btn-retro" style="background-color: #f8d030; color: #000; padding: 10px; width: auto; border-color: #000;">
+                        TRIVIA
+                    </button>
 
-            <div class="col-md-5">
-                <div id="region-bg" class="filter-section bg-kanto">
-                    <span class="section-title">REGIÓN Y TIPO</span>
-                    <form th:action="@{/filtro}" method="get" class="row g-2">
-                        <div class="col-6">
-                            <select name="type" class="form-select">
-                                <option value="">TIPO</option>
-                                <option value="fire">🔥 FUEGO</option>
-                                <option value="water">💧 AGUA</option>
-                                <option value="grass">🌿 PLANTA</option>
-                                <option value="electric">⚡ ELÉCTRICO</option>
-                                <option value="ice">❄️ HIELO</option>
-                                <option value="fighting">👊 LUCHA</option>
-                                <option value="poison">☠️ VENENO</option>
-                                <option value="ground">⛰️ TIERRA</option>
-                                <option value="flying">🦅 VOLADOR</option>
-                                <option value="psychic">🧠 PSÍQUICO</option>
-                                <option value="bug">🐛 BICHO</option>
-                                <option value="rock">🧱 ROCA</option>
-                                <option value="ghost">👻 FANTASMA</option>
-                                <option value="dragon">🐲 DRAGÓN</option>
-                                <option value="dark">🌑 SINIESTRO</option>
-                                <option value="steel">⚙️ ACERO</option>
-                                <option value="fairy">✨ HADA</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <select name="region" id="region-select" class="form-select" onchange="updateBg()">
-                                <option value="kanto">KANTO</option>
-                                <option value="johto">JOHTO</option>
-                                <option value="hoenn">HOENN</option>
-                                <option value="sinnoh">SINNOH</option>
-                                <option value="unova">UNOVA</option>
-                                <option value="kalos">KALOS</option>
-                                <option value="alola">ALOLA</option>
-                                <option value="galar">GALAR</option>
-                                <option value="paldea">PALDEA</option>
-                            </select>
-                        </div>
-                        <div class="col-12"><button type="submit" class="btn-retro">FILTRAR</button></div>
-                    </form>
-                </div>
-            </div>
+                    <a th:if="${esAdmin}" th:href="@{/pokedex/usuarios}" class="btn-retro" style="background-color: #38b0a8; text-decoration: none; padding: 10px; width: auto; display: flex; align-items: center;">
+                        USUARIOS
+                    </a>
 
-            <div class="col-md-4">
-                <div class="filter-section bg-dual">
-                    <span class="section-title">DOBLE TIPO</span>
-                    <form th:action="@{/pokedex/dual}" method="get" class="row g-2">
-                        <div class="col-6">
-                            <select name="type1" class="form-select">
-                                <option value="ghost">👻 T1</option>
-                                <option value="fire">🔥 FUE</option>
-                                <option value="water">💧 AGU</option>
-                                <option value="grass">🌿 PLA</option>
-                                <option value="fairy">✨ HAD</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <select name="type2" class="form-select">
-                                <option value="fairy">✨ T2</option>
-                                <option value="ghost">👻 FAN</option>
-                                <option value="poison">☠️ VEN</option>
-                                <option value="steel">⚙️ ACE</option>
-                                <option value="dark">🌑 SIN</option>
-                            </select>
-                        </div>
-                        <div class="col-12"><button type="submit" class="btn-retro">BUSCAR DUAL</button></div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <a th:href="${esAdmin ? '/pokedex/ranking' : '/pokedex/perfil'}" class="btn-retro" style="background-color: #38b0a8; text-decoration: none; padding: 10px; width: auto; display: flex; align-items: center;" th:text="${esAdmin ? 'RANKING' : 'FAVORITOS'}">
+                    </a>
 
-    <div class="row row-cols-2 row-cols-md-4 g-3">
-        <div class="col" th:each="pokemon : ${pokemones}">
-            <div class="pokemon-card">
-                <div class="pokemon-img-container">
-                    <div class="evo-bg">
-                        <img th:if="${pokemon.id > 1}" th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id - 1} + '.png'" class="evo-img">
-                        <img th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id + 1} + '.png'" class="evo-img">
-                    </div>
-                    <img th:src="${pokemon.urlImagen}" class="pokemon-img" style="height: 80px; image-rendering: pixelated; position: relative; z-index: 2;">
-                </div>
-                <div style="font-size: 8px; text-transform: uppercase; margin-bottom: 10px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
-                
-                <div class="d-flex gap-1">
-                    <a th:href="@{/pokedex/detalle/{id}(id=${pokemon.id})}" 
-                       class="btn btn-retro mt-2" 
-                       onclick="captureAnimation(event, this)"
-                       style="text-decoration: none; line-height: 1.5; background-color: #4CAF50;">VER</a>
-                    
-                    <div style="flex-grow: 1;">
-                        <button type="button" class="btn btn-retro mt-2 btn-capture-index" 
-                                th:data-id="${pokemon.id}"
-                                th:data-nombre="${pokemon.nombre}"
-                                th:data-img="${pokemon.urlImagen}"
-                                onclick="quickCapture(this)">
-                            FAVORITO
-                        </button>
+                    <div class="logout-container">
+                        <form th:action="@{/logout}" method="post" id="logoutForm">
+                            <button type="button" class="btn-salir" onclick="shutDownTV()">SALIR</button>
+                        </form>
                     </div>
                 </div>
             </div>
+
+            <div class="filter-bar">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <div class="filter-section" style="background: #ddd;">
+                            <span class="section-title">NOMBRE</span>
+                            <form th:action="@{/pokedex/buscar}" method="get" class="d-flex flex-column gap-2">
+                                <input type="text" name="nombre" class="form-control" placeholder="NOMBRE..."/>
+                                <button type="submit" class="btn-retro">OK</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div id="region-bg" class="filter-section bg-kanto">
+                            <span class="section-title">REGIÓN Y TIPO</span>
+                            <form th:action="@{/filtro}" method="get" class="row g-2">
+                                <div class="col-6">
+                                    <select name="type" class="form-select">
+                                        <option value="">TIPO</option>
+                                        <option value="fire">🔥 FUEGO</option>
+                                        <option value="water">💧 AGUA</option>
+                                        <option value="grass">🌿 PLANTA</option>
+                                        <option value="electric">⚡ ELÉCTRICO</option>
+                                        <option value="ice">❄️ HIELO</option>
+                                        <option value="fighting">👊 LUCHA</option>
+                                        <option value="poison">☠️ VENENO</option>
+                                        <option value="ground">⛰️ TIERRA</option>
+                                        <option value="flying">🦅 VOLADOR</option>
+                                        <option value="psychic">🧠 PSÍQUICO</option>
+                                        <option value="bug">🐛 BICHO</option>
+                                        <option value="rock">🧱 ROCA</option>
+                                        <option value="ghost">👻 FANTASMA</option>
+                                        <option value="dragon">🐲 DRAGÓN</option>
+                                        <option value="dark">🌑 SINIESTRO</option>
+                                        <option value="steel">⚙️ ACERO</option>
+                                        <option value="fairy">✨ HADA</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <select name="region" id="region-select" class="form-select" onchange="updateBg()">
+                                        <option value="kanto">KANTO</option>
+                                        <option value="johto">JOHTO</option>
+                                        <option value="hoenn">HOENN</option>
+                                        <option value="sinnoh">SINNOH</option>
+                                        <option value="unova">UNOVA</option>
+                                        <option value="kalos">KALOS</option>
+                                        <option value="alola">ALOLA</option>
+                                        <option value="galar">GALAR</option>
+                                        <option value="paldea">PALDEA</option>
+                                    </select>
+                                </div>
+                                <div class="col-12"><button type="submit" class="btn-retro">FILTRAR</button></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="filter-section bg-dual">
+                            <span class="section-title">DOBLE TIPO</span>
+                            <form th:action="@{/pokedex/dual}" method="get" class="row g-2">
+                                <div class="col-6">
+                                    <select name="type1" class="form-select">
+                                        <option value="ghost">👻 T1</option>
+                                        <option value="fire">🔥 FUE</option>
+                                        <option value="water">💧 AGU</option>
+                                        <option value="grass">🌿 PLA</option>
+                                        <option value="fairy">✨ HAD</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <select name="type2" class="form-select">
+                                        <option value="fairy">✨ T2</option>
+                                        <option value="ghost">👻 FAN</option>
+                                        <option value="poison">☠️ VEN</option>
+                                        <option value="steel">⚙️ ACE</option>
+                                        <option value="dark">🌑 SIN</option>
+                                    </select>
+                                </div>
+                                <div class="col-12"><button type="submit" class="btn-retro">BUSCAR DUAL</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-cols-2 row-cols-md-4 g-3">
+                <div class="col" th:each="pokemon : ${pokemones}">
+                    <div class="pokemon-card">
+                        <div class="pokemon-img-container">
+                            <div class="evo-bg">
+                                <img th:if="${pokemon.id > 1}" th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id - 1} + '.png'" class="evo-img">
+                                <img th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id + 1} + '.png'" class="evo-img">
+                            </div>
+                            <img th:src="${pokemon.urlImagen}" class="pokemon-img" style="height: 80px; image-rendering: pixelated; position: relative; z-index: 2;">
+                        </div>
+                        <div style="font-size: 8px; text-transform: uppercase; margin-bottom: 10px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
+                        <div class="d-flex gap-1">
+                            <a th:href="@{/pokedex/detalle/{id}(id=${pokemon.id})}" class="btn btn-retro mt-2" onclick="captureAnimation(event, this)" style="text-decoration: none; line-height: 1.5; background-color: #4CAF50;">VER</a>
+                            <div style="flex-grow: 1;">
+                                <button type="button" class="btn btn-retro mt-2 btn-capture-index" th:data-id="${pokemon.id}" th:data-nombre="${pokemon.nombre}" th:data-img="${pokemon.urlImagen}" th:text="${capturados != null and #lists.contains(capturados, pokemon.id) ? 'ATRAPADO' : 'FAVORITO'}" th:disabled="${capturados != null and #lists.contains(capturados, pokemon.id)}" th:style="${capturados != null and #lists.contains(capturados, pokemon.id) ? 'background-color: #585858; box-shadow: none; transform: none;' : ''}" onclick="quickCapture(this)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination-container" th:if="${limit != null}">
+                <a th:if="${currentOffset > 0}" th:href="@{/pokedex(limit=${limit}, offset=${currentOffset - limit})}" class="btn-retro" style="width: auto; padding: 5px 15px;"> < ANT </a>
+                <span style="font-size: 8px;" th:text="'PAG: ' + (${currentOffset / limit} + 1)"></span>
+                <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit})}" class="btn-retro" style="width: auto; padding: 10px 20px;"> SIG > </a>
+            </div>
         </div>
-    </div>
 
-    <div class="pagination-container" th:if="${limit != null}">
-        <a th:if="${currentOffset > 0}" th:href="@{/pokedex(limit=${limit}, offset=${currentOffset - limit})}" class="btn-retro" style="width: auto; padding: 5px 15px;"> < ANT </a>
-        <span style="font-size: 8px;" th:text="'PAG: ' + (${currentOffset / limit} + 1)"></span>
-        <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit})}" class="btn-retro" style="width: auto; padding: 10px 20px;"> SIG > </a>
-    </div>
-</div>
+        <div id="modalTrivia" style="display:none; position:fixed; z-index:11000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items:center; justify-content:center;">
+            <div class="pokedex-container" style="max-width:350px; text-align:center; border:6px solid #585858; background: #f8f8f8;">
+                <h1 style="font-size:10px; margin-bottom:15px; background: #ff1100; color: white; padding: 5px;">¿QUIÉN ES ESE POKÉMON?</h1>
+                <div class="pokemon-img-container" style="background:#d0f0f8; margin-bottom:15px; height:180px; display: flex; align-items: center; justify-content: center;">
+                    <img id="triviaImg" src="" style="width:160px; height:160px; filter:brightness(0); transition:filter 0.5s ease-in-out; image-rendering:pixelated;">
+                </div>
+                <div id="triviaForm">
+                    <input type="text" id="triviaInput" placeholder="NOMBRE..." style="width:90%; padding:10px; font-family:'Press Start 2P'; font-size:8px; text-align:center; border:3px solid #585858; margin-bottom:10px; text-transform:uppercase;">
+                    <button onclick="validarRespuestaTrivia()" class="btn-retro" style="width:90%; padding:10px;">ADIVINAR</button>
+                </div>
+                <div id="triviaResult" style="display:none; padding:10px;">
+                    <p id="triviaMsg" style="font-size:10px; margin-bottom:15px;"></p>
+                    <button onclick="cargarTrivia()" class="btn-retro" style="background:#4CAF50; width:90%; margin-bottom: 10px;">OTRO POKÉMON</button>
+                </div>
+                <hr style="border: 2px solid #585858; margin: 10px 20px;">
+                <button onclick="cerrarTrivia()" class="btn-retro" style="background:#585858; width:80%; margin-bottom: 15px; font-size: 8px;">SALIR DE TRIVIA</button>
+            </div>
+        </div>
 
-<div id="namingScreenIndex" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
-    <div style="background: #f8f8f8; border: 6px solid #585858; padding: 30px; text-align: center; box-shadow: 8px 8px 0 #000; width: 80%; max-width: 450px;">
-        <p id="namingQuestionIndex" style="font-family: 'Press Start 2P'; font-size: 14px; line-height: 1.8; color: #333; margin-bottom: 25px;"></p>
-        <input type="text" id="nicknameInputIndex" maxlength="12" style="font-family: 'Press Start 2P'; font-size: 18px; padding: 15px; border: 4px solid #585858; width: 80%; text-align: center; text-transform: uppercase; margin-bottom: 25px; outline: none;">
-        <br>
-        <button id="btnSaveNicknameIndex" class="btn-retro" style="font-size: 14px; padding: 15px 30px; width: auto;">ACEPTAR</button>
-    </div>
-</div>
+        <div id="namingScreenIndex" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+            <div style="background: #f8f8f8; border: 6px solid #585858; padding: 30px; text-align: center; box-shadow: 8px 8px 0 #000; width: 80%; max-width: 450px;">
+                <p id="namingQuestionIndex" style="font-family: 'Press Start 2P'; font-size: 14px; line-height: 1.8; color: #333; margin-bottom: 25px;"></p>
+                <input type="text" id="nicknameInputIndex" maxlength="12" style="font-family: 'Press Start 2P'; font-size: 18px; padding: 15px; border: 4px solid #585858; width: 80%; text-align: center; text-transform: uppercase; margin-bottom: 25px; outline: none;">
+                <br>
+                <button id="btnSaveNicknameIndex" class="btn-retro" style="font-size: 14px; padding: 15px 30px; width: auto;">ACEPTAR</button>
+            </div>
+        </div>
 
-<script>
-    function startApp() {
-        const container = document.getElementById('intro-container');
-        const video = document.getElementById('intro-video');
-        if (video) {
-            video.muted = false;
-            video.volume = 0.8;
-        }
-        container.classList.add('fade-out');
-        sessionStorage.setItem('introPlayed', 'true'); 
-        setTimeout(() => {
-            container.style.display = 'none';
-            if (video) video.pause();
-        }, 1200);
-    }
+        <script>
+            let idPokemonActual = 0;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const introPlayed = sessionStorage.getItem('introPlayed');
-        const container = document.getElementById('intro-container');
-        const video = document.getElementById('intro-video');
-
-        if (!introPlayed && container && video) {
-            container.style.display = 'flex';
-            video.play().catch(e => console.log(e));
-            
-            video.onended = function() {
-                startApp();
-            };
-        }
-
-        let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
-        const captureButtons = document.querySelectorAll('.btn-capture-index');
-        
-        captureButtons.forEach(btn => {
-            const id = btn.getAttribute('data-id');
-            if (captured.includes(id.toString())) {
-                btn.innerText = "ATRAPADO";
-                btn.disabled = true;
-                btn.style.backgroundColor = "#585858";
-                btn.style.boxShadow = "none";
-                btn.style.transform = "none";
-            }
-        });
-    });
-
-    function quickCapture(btn) {
-        const id = btn.getAttribute('data-id');
-        const nombreOriginal = btn.getAttribute('data-nombre');
-        const urlImg = btn.getAttribute('data-img');
-        
-        const namingScreen = document.getElementById('namingScreenIndex');
-        const namingQuestion = document.getElementById('namingQuestionIndex');
-        const nicknameInput = document.getElementById('nicknameInputIndex');
-        const btnSaveNickname = document.getElementById('btnSaveNicknameIndex');
-
-        namingQuestion.innerText = `¡Atrapaste a ${nombreOriginal.toUpperCase()}!\n\n¿Quieres darle un apodo?`;
-        nicknameInput.value = nombreOriginal.toUpperCase();
-        namingScreen.style.display = 'flex';
-        nicknameInput.focus();
-
-        btnSaveNickname.onclick = function() {
-            let apodo = nicknameInput.value.trim();
-            if (apodo === "") {
-                apodo = nombreOriginal.toUpperCase();
+            function shutDownTV() {
+                const wrapper = document.getElementById('pokedexWrapper');
+                const form = document.getElementById('logoutForm');
+                document.body.style.backgroundColor = "#000";
+                document.body.style.backgroundImage = "none";
+                if (wrapper) wrapper.classList.add('tv-off-animation');
+                setTimeout(() => {
+                    sessionStorage.removeItem('introPlayed');
+                    if (form) form.submit();
+                }, 600);
             }
 
-            namingScreen.style.display = 'none';
+            function captureAnimation(event, element) {
+                event.preventDefault();
+                const url = element.getAttribute('href');
+                const card = element.closest('.pokemon-card');
+                const img = card ? card.querySelector('.pokemon-img') : null;
 
-            const formData = new FormData();
-            formData.append('id', id);
-            formData.append('nombre', apodo);
-            formData.append('urlImagen', urlImg);
+                // REPRODUCIR SONIDO AL HACER CLIC EN VER
+                const parts = url.split('/');
+                const id = parts[parts.length - 1];
+                const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/${id}.ogg`);
+                audio.volume = 0.5;
+                audio.play().catch(() => console.log("Sonido no disponible"));
 
-            fetch('/pokedex/guardar', { method: 'POST', body: formData })
-            .then(response => response.text())
-            .then(data => {
-                if (data === "OK") {
-                    let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
-                    if (!captured.includes(id.toString())) {
-                        captured.push(id.toString());
-                        localStorage.setItem('myCapturedPkmn', JSON.stringify(captured));
-                    }
-
-                    btn.innerText = "ATRAPADO";
-                    btn.disabled = true;
-                    btn.style.backgroundColor = "#585858";
-                    btn.style.boxShadow = "none";
-                    btn.style.transform = "none";
-                } else {
-                    alert("Error: " + data);
+                document.body.style.backgroundColor = "#fff";
+                if (img) {
+                    img.style.transition = "all 0.5s ease-in";
+                    img.style.transform = "scale(0.1) rotate(360deg)";
+                    img.style.filter = "brightness(5) sepia(1) hue-rotate(100deg)";
+                    img.style.opacity = "0";
                 }
-            })
-            .catch(err => {
-                console.error(err);
-            });
-        };
-    }
-</script>
-</body>
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 500);
+            }
+
+            function cargarTrivia() {
+                fetch('/pokedex/api/trivia-dia')
+                        .then(res => res.json())
+                        .then(pokemon => {
+                            if (pokemon && pokemon.urlImagen) {
+                                idPokemonActual = pokemon.id;
+                                const img = document.getElementById('triviaImg');
+                                const formDiv = document.getElementById('triviaForm');
+                                const resultDiv = document.getElementById('triviaResult');
+                                const input = document.getElementById('triviaInput');
+                                img.src = pokemon.urlImagen;
+                                img.style.filter = "brightness(0)";
+                                formDiv.style.display = 'block';
+                                resultDiv.style.display = 'none';
+                                input.value = "";
+                                document.getElementById('modalTrivia').style.display = 'flex';
+                            }
+                        })
+                        .catch(err => console.error("Error al cargar trivia:", err));
+            }
+
+            function validarRespuestaTrivia() {
+                const intento = document.getElementById('triviaInput').value;
+                if (!intento.trim()) return;
+                const formData = new FormData();
+                formData.append('nombreIntento', intento);
+                formData.append('idPokemon', idPokemonActual);
+                fetch('/pokedex/api/trivia-validar', {method: 'POST', body: formData})
+                        .then(res => res.json())
+                        .then(data => {
+                            const img = document.getElementById('triviaImg');
+                            const msg = document.getElementById('triviaMsg');
+                            const resultDiv = document.getElementById('triviaResult');
+                            const formDiv = document.getElementById('triviaForm');
+                            img.style.filter = "brightness(1)";
+                            formDiv.style.display = 'none';
+                            resultDiv.style.display = 'block';
+                            if (data.success) {
+                                msg.innerText = "¡CORRECTO! ES " + data.nombreReal;
+                                msg.style.color = "#38b0a8";
+                            } else {
+                                msg.innerText = "¡OH NO! ERA " + data.nombreReal;
+                                msg.style.color = "#ff1100";
+                            }
+                        });
+            }
+
+            function cerrarTrivia() {
+                document.getElementById('modalTrivia').style.display = 'none';
+            }
+
+            function startApp() {
+                const container = document.getElementById('intro-container');
+                const video = document.getElementById('intro-video');
+                if (video) {
+                    video.muted = false;
+                    video.volume = 0.8;
+                }
+                container.classList.add('fade-out');
+                sessionStorage.setItem('introPlayed', 'true');
+                setTimeout(() => {
+                    container.style.display = 'none';
+                    if (video) video.pause();
+                }, 1200);
+            }
+
+            function quickCapture(btn) {
+                const id = btn.getAttribute('data-id');
+                const nombreOriginal = btn.getAttribute('data-nombre');
+                const urlImg = btn.getAttribute('data-img');
+                const namingScreen = document.getElementById('namingScreenIndex');
+                const namingQuestion = document.getElementById('namingQuestionIndex');
+                const nicknameInput = document.getElementById('nicknameInputIndex');
+                const btnSaveNickname = document.getElementById('btnSaveNicknameIndex');
+                namingQuestion.innerText = `¡Atrapaste a ${nombreOriginal.toUpperCase()}!\n\n¿Quieres darle un apodo?`;
+                nicknameInput.value = nombreOriginal.toUpperCase();
+                namingScreen.style.display = 'flex';
+                nicknameInput.focus();
+                btnSaveNickname.onclick = function () {
+                    let apodo = nicknameInput.value.trim();
+                    if (apodo === "") apodo = nombreOriginal.toUpperCase();
+                    namingScreen.style.display = 'none';
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('nombre', apodo);
+                    formData.append('urlImagen', urlImg);
+                    fetch('/pokedex/guardar', {method: 'POST', body: formData})
+                            .then(response => response.text())
+                            .then(data => {
+                                if (data === "OK") {
+                                    btn.innerText = "ATRAPADO";
+                                    btn.disabled = true;
+                                    btn.style.backgroundColor = "#585858";
+                                    btn.style.boxShadow = "none";
+                                    btn.style.transform = "none";
+                                } else {
+                                    alert("Error: " + data);
+                                }
+                            })
+                            .catch(err => console.error(err));
+                };
+            }
+        </script>
+    </body>
 </html>

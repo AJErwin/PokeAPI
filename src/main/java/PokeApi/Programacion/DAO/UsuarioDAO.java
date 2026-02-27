@@ -50,13 +50,61 @@ public class UsuarioDAO {
         }
     }
 
-    public List<Pokemon> getFavoritosGlobales() {
-        String sql = "SELECT idPokemon AS id, nombre, urlImagen, COUNT(idPokemon) AS cantidadFavoritos FROM favoritos GROUP BY idPokemon, nombre, urlImagen ORDER BY cantidadFavoritos DESC";
+    public List<Pokemon> getFavoritosGlobales(String orden) {
+        String direccion = "asc".equalsIgnoreCase(orden) ? "ASC" : "DESC";
+        String sql = "SELECT idPokemon AS id, COUNT(idPokemon) AS cantidadFavoritos FROM favorito GROUP BY idPokemon ORDER BY cantidadFavoritos " + direccion;
         try {
             return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Pokemon.class));
         } catch (Exception e) {
-            System.out.println("ERROR SQL EN getFavoritosGlobales: " + e.getMessage());
             return new java.util.ArrayList<>();
         }
     }
+
+
+public Usuario getById(int id) {
+        String sql = "SELECT * FROM USUARIO WHERE IDUSUARIO = ?";
+
+try {
+            return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Usuario.class  
+
+), id);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public int updateUsuario(Usuario usuario) {
+        String sql = "UPDATE USUARIO SET USERNAME = ?, CORREO = ?, STATUS = ?, ROLUSUARIO = ? WHERE IDUSUARIO = ?";
+        try {
+            return jdbcTemplate.update(sql,
+                    usuario.getUsername(),
+                    usuario.getCorreo(),
+                    usuario.getStatus(),
+                    usuario.getRolusuario(),
+                    usuario.getIdUsuario());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+    
+    public Pokemon getPokemonDelDia() {
+    long seed = java.time.LocalDate.now().toEpochDay();
+    java.util.Random rand = new java.util.Random(seed);
+    
+    int idAleatorio = rand.nextInt(151) + 1;
+    
+    Pokemon pokemon = new Pokemon();
+    pokemon.setId(idAleatorio);
+    pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + idAleatorio + ".png");
+    
+    try {
+        String sql = "SELECT POKEMON FROM favorito WHERE idPokemon = ? FETCH FIRST 1 ROWS ONLY";
+        String nombreBase = jdbcTemplate.queryForObject(sql, String.class, idAleatorio);
+        pokemon.setNombre(nombreBase);
+    } catch (Exception e) {
+        pokemon.setNombre("Desconocido");
+    }
+    
+    return pokemon;
+}
 }
