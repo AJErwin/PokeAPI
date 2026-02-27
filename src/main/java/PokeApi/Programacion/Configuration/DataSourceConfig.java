@@ -10,14 +10,12 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 public class DataSourceConfig {
     
     @Bean
-    public DataSource dataSource(){
-        
+    public DataSource dataSource(){ 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("oracle.jdbc.OracleDriver");
-        dataSource.setUrl("jdbc:oracle:thin:@localhost:1521:orcl");
+        dataSource.setUrl("jdbc:oracle:thin:@192.167.1.39:1521:orcl");
         dataSource.setUsername("PokeApi");
         dataSource.setPassword("password1");
-        
         return dataSource;
     }
     

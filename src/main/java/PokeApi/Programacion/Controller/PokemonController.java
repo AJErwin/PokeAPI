@@ -4,12 +4,14 @@ import PokeApi.Programacion.DAO.UsuarioDAO;
 import PokeApi.Programacion.JPA.Result;
 import PokeApi.Programacion.ML.Pokemon;
 import PokeApi.Programacion.ML.Usuario;
+import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -54,12 +56,12 @@ public class PokemonController {
 
     @GetMapping("/pokedex")
     public String mostrarPokedex(
-        @RequestParam(defaultValue = "8") int limit,
-        @RequestParam(defaultValue = "0") int offset,
-        Model model) {
+            @RequestParam(defaultValue = "8") int limit,
+            @RequestParam(defaultValue = "0") int offset,
+            Model model) {
 
         Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
-        
+
         model.addAttribute("pokemones", apiResult.Objects);
         model.addAttribute("currentOffset", offset);
         model.addAttribute("limit", 8);
@@ -148,43 +150,51 @@ public class PokemonController {
             return "Error al eliminar: " + e.getMessage();
         }
     }
-    
+
     @GetMapping("/registro")
     public String mostrarRegistro() {
         return "registro";
     }
 
     @PostMapping("/registro")
-    public String procesarRegistro(@RequestParam String username, 
-                                   @RequestParam String correo, 
-                                   @RequestParam String password, 
-                                   Model model) {
-        
+    public String procesarRegistro(@RequestParam String username,
+            @RequestParam String correo,
+            @RequestParam String password,
+            Model model) {
+
         if (usuarioDAO.getByCorreo(correo) != null) {
             model.addAttribute("error", "EL CORREO YA ESTA EN USO");
             return "registro";
         }
 
-        int resultado = usuarioDAO.guardarUsuario(username, correo, password);
-        
+        String passwordEncriptado = passwordEncoder.encode(password);
+
+        int resultado = usuarioDAO.guardarUsuario(username, correo, passwordEncriptado);
+
         if (resultado > 0) {
-            model.addAttribute("exito", "CUENTA CREADA. VUELVE AL LOGIN.");
+
+            Usuario usuario = usuarioDAO.getByCorreo(correo);
+
+            emailVerificationService.createToken(usuario.getIdUsuario(), correo);
+
+            model.addAttribute("exito",
+                    "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
         } else {
             model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
         }
-        
+
         return "registro";
     }
-    
+
     @GetMapping("/pokedex/usuarios")
     public String verUsuarios(Model model) {
         List<Usuario> usuarios = usuarioDAO.getAllUsuarios();
-        
+
         for (Usuario usuario : usuarios) {
             List<Pokemon> favs = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
             usuario.setFavoritos(favs);
         }
-        
+
         model.addAttribute("usuarios", usuarios);
         return "usuarios";
     }

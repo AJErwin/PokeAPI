@@ -2,7 +2,8 @@ package PokeApi.Programacion.Service;
 
 import PokeApi.Programacion.DAO.UsuarioDAO;
 import PokeApi.Programacion.ML.Usuario;
-import org.springframework.security.core.userdetails.User;
+import java.util.ArrayList;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,17 +19,22 @@ public class UsuarioDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-        Usuario usuario = usuarioDAO.getByCorreo(correo);
-        
+    public UserDetails loadUserByUsername(String username) {
+
+        Usuario usuario = usuarioDAO.getByUsernameOrCorreo(username);
+
         if (usuario == null) {
-            throw new UsernameNotFoundException("Correo no encontrado");
+            throw new UsernameNotFoundException("Usuario no encontrado");
         }
 
-        return User.builder()
-                .username(usuario.getCorreo())
-                .password(usuario.getPassword())
-                .roles("USER")
-                .build();
+        if (usuario.getStatus() == 0) {
+            throw new DisabledException("Cuenta no verificada");
+        }
+
+        return new org.springframework.security.core.userdetails.User(
+                usuario.getUsername(),
+                usuario.getPassword(),
+                new ArrayList<>()
+        );
     }
 }

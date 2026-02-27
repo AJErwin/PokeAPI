@@ -33,7 +33,7 @@ public class UsuarioDAO {
     }
 
     public int guardarUsuario(String username, String correo, String password) {
-        String sql = "INSERT INTO USUARIO (USERNAME, CORREO, PASSWORD, STATUS, ROLUSUARIO) VALUES (?, ?, ?, 1, 2)";
+        String sql = "INSERT INTO USUARIO (USERNAME, CORREO, PASSWORD, STATUS, ROLUSUARIO) VALUES (?, ?, ?, 0, 2)";
         try {
             return jdbcTemplate.update(sql, username, correo, password);
         } catch (Exception e) {
