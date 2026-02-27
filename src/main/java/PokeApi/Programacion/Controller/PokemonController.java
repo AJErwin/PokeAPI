@@ -37,19 +37,24 @@ public class PokemonController {
     }
 
     @GetMapping("/pokedex")
-    public String mostrarPokedex(
-            @RequestParam(defaultValue = "8") int limit,
-            @RequestParam(defaultValue = "0") int offset,
-            Model model) {
+public String mostrarPokedex(
+        @RequestParam(defaultValue = "8") int limit,
+        @RequestParam(defaultValue = "0") int offset,
+        org.springframework.security.core.Authentication auth,
+        Model model) {
 
-        Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+    Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
 
-        model.addAttribute("pokemones", apiResult.Objects);
-        model.addAttribute("currentOffset", offset);
-        model.addAttribute("limit", 8);
+    boolean esAdmin = auth != null && auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        return "index";
-    }
+    model.addAttribute("pokemones", apiResult.Objects);
+    model.addAttribute("currentOffset", offset);
+    model.addAttribute("limit", limit);
+    model.addAttribute("esAdmin", esAdmin); 
+    
+    return "index";
+}
 
     @GetMapping("/pokedex/buscar")
     public String buscarPokemon(@RequestParam String nombre, Model model) {

@@ -12,6 +12,7 @@ public class Usuario {
     private int status;
     private int rolusuario;
     private List<Pokemon> favoritos;
+    private Rol rol;
 
     public Usuario() {
     }
@@ -24,6 +25,7 @@ public class Usuario {
         this.fecharegistro = fecharegistro;
         this.status = status;
         this.rolusuario = rolusuario;
+
     }
 
     public int getIdUsuario() {
@@ -88,5 +90,13 @@ public class Usuario {
 
     public void setFavoritos(List<Pokemon> favoritos) {
         this.favoritos = favoritos;
+    }
+
+    public Rol getRol() {
+        return rol;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
     }
 }

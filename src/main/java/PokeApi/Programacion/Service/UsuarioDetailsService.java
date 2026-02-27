@@ -2,8 +2,10 @@ package PokeApi.Programacion.Service;
 
 import PokeApi.Programacion.DAO.UsuarioDAO;
 import PokeApi.Programacion.ML.Usuario;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,21 +22,24 @@ public class UsuarioDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-
         Usuario usuario = usuarioDAO.getByUsernameOrCorreo(username);
 
         if (usuario == null) {
-            throw new UsernameNotFoundException("Usuario no encontrado");
+            throw new UsernameNotFoundException("Credenciales no válidas");
         }
 
         if (usuario.getStatus() == 0) {
             throw new DisabledException("Cuenta no verificada");
         }
 
+        String nombreRol = (usuario.getRol() != null) ? usuario.getRol().getNombreRol().toUpperCase() : "USER";
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + nombreRol);
+
         return new org.springframework.security.core.userdetails.User(
-                usuario.getUsername(),
+                usuario.getCorreo(),
                 usuario.getPassword(),
-                new ArrayList<>()
+                Collections.singletonList(authority)
         );
     }
 }
+
