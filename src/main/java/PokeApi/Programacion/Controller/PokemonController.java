@@ -51,42 +51,94 @@ public class PokemonController {
             Model model) {
 
         Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+
+        boolean hasNext = apiResult.Objects.size() == limit;
+
         model.addAttribute("pokemones", apiResult.Objects);
         model.addAttribute("currentOffset", offset);
         model.addAttribute("limit", limit);
-        
+        model.addAttribute("urlBase", "/pokedex");
+        model.addAttribute("hasNext", hasNext);
+
         return "index";
     }
 
     @GetMapping("/pokedex/buscar")
-    public String buscarPokemon(@RequestParam String nombre, Model model) {
+    public String buscarPokemon(@RequestParam String nombre,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "8") int limit,
+            Model model) {
+
         List<Pokemon> resultados = pokemonService.buscarPokemon(nombre);
-        List<Pokemon> limitados = resultados.stream().limit(8).toList();
-        model.addAttribute("pokemones", limitados);
-        model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", 8);
+
+        List<Pokemon> paginados = resultados.stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+
+        boolean hasNext = (offset + limit) < resultados.size();
+
+        model.addAttribute("pokemones", paginados);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("nombre", nombre);
+        model.addAttribute("urlBase", "/pokedex/buscar");
+        model.addAttribute("hasNext", hasNext);
+
         return "index";
     }
 
     @GetMapping("/pokedex/dual")
-    public String buscarDual(@RequestParam String type1, @RequestParam String type2, Model model) {
+    public String buscarDual(@RequestParam String type1,
+            @RequestParam String type2,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "8") int limit,
+            Model model) {
+
         List<Pokemon> resultados = pokemonService.getByTwoTypes(type1, type2);
-        List<Pokemon> limitados = resultados.stream().limit(8).toList();
-        model.addAttribute("pokemones", limitados);
-        model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", 8);
+
+        List<Pokemon> paginados = resultados.stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+
+        boolean hasNext = (offset + limit) < resultados.size();
+
+        model.addAttribute("pokemones", paginados);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("type1", type1);
+        model.addAttribute("type2", type2);
+        model.addAttribute("urlBase", "/pokedex/dual");
+        model.addAttribute("hasNext", hasNext);
+
         return "index";
     }
 
     @GetMapping("/filtro")
     public String filtrar(@RequestParam(required = false) String region,
-                          @RequestParam(required = false) String type,
-                          Model model) {
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "8") int limit,
+            Model model) {
+
         List<Pokemon> resultados = pokemonService.getByRegionAndType(region, type);
-        List<Pokemon> limitados = resultados.stream().limit(8).toList();
-        model.addAttribute("pokemones", limitados);
-        model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", 8);
+
+        List<Pokemon> paginados = resultados.stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+
+        boolean hasNext = (offset + limit) < resultados.size();
+
+        model.addAttribute("pokemones", paginados);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("region", region);
+        model.addAttribute("type", type);
+        model.addAttribute("urlBase", "/filtro");
+        model.addAttribute("hasNext", hasNext);
+
         return "index";
     }
 
@@ -144,9 +196,9 @@ public class PokemonController {
 
     @PostMapping("/registro")
     public String procesarRegistro(@RequestParam String username,
-                                   @RequestParam String correo,
-                                   @RequestParam String password,
-                                   Model model) {
+            @RequestParam String correo,
+            @RequestParam String password,
+            Model model) {
         if (usuarioDAO.getByCorreo(correo) != null) {
             model.addAttribute("error", "EL CORREO YA ESTA EN USO");
             return "registro";
@@ -212,7 +264,7 @@ public class PokemonController {
     @ResponseBody
     public Pokemon getTriviaJson() {
         int idAleatorio = (int) (Math.random() * 1350) + 1;
-        return pokemonService.getById(idAleatorio); 
+        return pokemonService.getById(idAleatorio);
     }
 
     @PostMapping("/pokedex/api/trivia-validar")
