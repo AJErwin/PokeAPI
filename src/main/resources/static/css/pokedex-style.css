@@ -76,36 +76,16 @@ h1 {
     text-shadow: 2px 2px #800000;
 }
 
-.bg-kanto {
-    background: linear-gradient(135deg, #78c850 0%, #5ca935 100%);
-}
-.bg-johto {
-    background: linear-gradient(135deg, #ffce4b 0%, #e1a100 100%);
-}
-.bg-hoenn {
-    background: linear-gradient(135deg, #4592c4 0%, #176091 100%);
-}
-.bg-sinnoh {
-    background: linear-gradient(135deg, #b8b8d0 0%, #808098 100%);
-}
-.bg-unova {
-    background: linear-gradient(135deg, #a8a878 0%, #707048 100%);
-}
-.bg-kalos {
-    background: linear-gradient(135deg, #f08030 0%, #c05000 100%);
-}
-.bg-alola {
-    background: linear-gradient(135deg, #f8d030 0%, #c8a000 100%);
-}
-.bg-galar {
-    background: linear-gradient(135deg, #ee99ac 0%, #d65076 100%);
-}
-.bg-paldea {
-    background: linear-gradient(135deg, #705898 0%, #483860 100%);
-}
-.bg-dual {
-    background: linear-gradient(135deg, #705898 0%, #ee99ac 100%);
-}
+.bg-kanto { background: linear-gradient(135deg, #78c850 0%, #5ca935 100%); }
+.bg-johto { background: linear-gradient(135deg, #ffce4b 0%, #e1a100 100%); }
+.bg-hoenn { background: linear-gradient(135deg, #4592c4 0%, #176091 100%); }
+.bg-sinnoh { background: linear-gradient(135deg, #b8b8d0 0%, #808098 100%); }
+.bg-unova { background: linear-gradient(135deg, #a8a878 0%, #707048 100%); }
+.bg-kalos { background: linear-gradient(135deg, #f08030 0%, #c05000 100%); }
+.bg-alola { background: linear-gradient(135deg, #f8d030 0%, #c8a000 100%); }
+.bg-galar { background: linear-gradient(135deg, #ee99ac 0%, #d65076 100%); }
+.bg-paldea { background: linear-gradient(135deg, #705898 0%, #483860 100%); }
+.bg-dual { background: linear-gradient(135deg, #705898 0%, #ee99ac 100%); }
 
 .filter-section {
     border: 4px solid #585858;
@@ -256,172 +236,102 @@ h1 {
     z-index: 1;
 }
 
-.tv-off-animation {
-    animation: tvOffEffect 0.6s forwards linear;
-}
-
-.throw-animation {
-    animation: throwBall 1s ease-out forwards;
-}
-
-.capture-shake {
-    animation: shake 0.3s ease-in-out 3;
-}
+.tv-off-animation { animation: tvOffEffect 0.6s forwards linear; }
+.throw-animation { animation: throwBall 1s ease-out forwards; }
+.capture-shake { animation: shake 0.3s ease-in-out 3; }
 
 @keyframes tvOffEffect {
-    0% {
-        transform: scaleY(1) scaleX(1);
-        filter: brightness(1);
-    }
-    50% {
-        transform: scaleY(0.003) scaleX(1);
-        background: white;
-        filter: brightness(5);
-    }
-    100% {
-        transform: scale(0);
-        opacity: 0;
-    }
+    0% { transform: scaleY(1) scaleX(1); filter: brightness(1); }
+    50% { transform: scaleY(0.003) scaleX(1); background: white; filter: brightness(5); }
+    100% { transform: scale(0); opacity: 0; }
 }
 
 @keyframes appearFromBall {
-    0% {
-        transform: scale(0) rotate(0deg);
-        filter: brightness(10);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.2) rotate(180deg);
-        filter: brightness(5);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1) rotate(360deg);
-        filter: brightness(1);
-        opacity: 1;
-    }
+    0% { transform: scale(0) rotate(0deg); filter: brightness(10); opacity: 0; }
+    50% { transform: scale(1.2) rotate(180deg); filter: brightness(5); opacity: 1; }
+    100% { transform: scale(1) rotate(360deg); filter: brightness(1); opacity: 1; }
 }
 
 @keyframes throwBall {
-    0% {
-        transform: translate(-200%, 200%) scale(0.5) rotate(0deg);
-    }
-    100% {
-        transform: translate(0, 0) scale(1) rotate(720deg);
-    }
+    0% { transform: translate(-200%, 200%) scale(0.5) rotate(0deg); }
+    100% { transform: translate(0, 0) scale(1) rotate(720deg); }
 }
 
 @keyframes shake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-    25% {
-        transform: translateX(-8px) rotate(-10deg);
-    }
-    75% {
-        transform: translateX(8px) rotate(10deg);
-    }
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px) rotate(-10deg); }
+    75% { transform: translateX(8px) rotate(10deg); }
 }
 
-body.theme-night {
-    background-color: #182848 !important;
-    background-image: radial-gradient(#304860 20%, transparent 20%) !important;
+.battle-scene.type-fire { background: linear-gradient(to bottom, #f8d030 0%, #f08030 60%, #c03028 60%, #900000 100%) !important; }
+.battle-scene.type-water { background: linear-gradient(to bottom, #def8f8 0%, #6890f0 60%, #385890 60%, #002058 100%) !important; }
+.battle-scene.type-grass { background: linear-gradient(to bottom, #e0f8d0 0%, #78c850 60%, #489030 60%, #204818 100%) !important; }
+.battle-scene.type-electric { background: linear-gradient(to bottom, #f8f878 0%, #f8d030 60%, #b8a038 60%, #786820 100%) !important; }
+.battle-scene.type-psychic { background: linear-gradient(to bottom, #f8c0d0 0%, #f85888 60%, #a04058 60%, #682838 100%) !important; }
+.battle-scene.type-ice { background: linear-gradient(to bottom, #d0f8e8 0%, #98d8d8 60%, #68a0a0 60%, #386060 100%) !important; }
+.battle-scene.type-dragon { background: linear-gradient(to bottom, #d8d8f8 0%, #7038f8 60%, #483890 60%, #281848 100%) !important; }
+.battle-scene.type-dark { background: linear-gradient(to bottom, #705848 0%, #483838 60%, #201818 60%, #101010 100%) !important; }
+.battle-scene.type-fairy { background: linear-gradient(to bottom, #f8d8e8 0%, #ee99ac 60%, #906078 60%, #684058 100%) !important; }
+.battle-scene.type-poison { background: linear-gradient(to bottom, #d880b8 0%, #a040a0 60%, #682868 60%, #401040 100%) !important; }
+.battle-scene.type-bug { background: linear-gradient(to bottom, #d8e090 0%, #a8b820 60%, #687018 60%, #404810 100%) !important; }
+.battle-scene.type-rock { background: linear-gradient(to bottom, #e0d0a0 0%, #b8a038 60%, #786820 60%, #484010 100%) !important; }
+.battle-scene.type-ground { background: linear-gradient(to bottom, #f0e0a0 0%, #e0c068 60%, #886830 60%, #504018 100%) !important; }
+.battle-scene.type-ghost { background: linear-gradient(to bottom, #a080c0 0%, #705898 60%, #483860 60%, #281830 100%) !important; }
+.battle-scene.type-fighting { background: linear-gradient(to bottom, #f0a090 0%, #c03028 60%, #802018 60%, #481010 100%) !important; }
+.battle-scene.type-steel { background: linear-gradient(to bottom, #d8d8e0 0%, #b8b8d0 60%, #787890 60%, #484858 100%) !important; }
+.battle-scene.type-flying { background: linear-gradient(to bottom, #e0d8f8 0%, #a890f0 60%, #685898 60%, #403060 100%) !important; }
+.battle-scene.type-normal { background: linear-gradient(to bottom, #e8e8e8 0%, #a8a8a8 60%, #787878 60%, #484848 100%) !important; }
+
+.favs-marquee-container {
+    background-color: #282828;
+    border: 4px solid #585858;
+    margin: 10px;
+    padding: 15px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
 }
 
-body.theme-night .battle-scene {
-    background: linear-gradient(to bottom, #182848 0%, #182848 60%, #304860 60%, #304860 100%) !important;
+.marquee-content {
+    display: flex;
+    gap: 20px;
+    width: max-content;
 }
 
-body.theme-night .dialog-box {
-    background-color: #182848 !important;
-    border-top-color: #304860 !important;
+.animate-scroll {
+    animation: scroll-left 25s linear infinite;
 }
 
-body.theme-gameboy {
-    background-color: #8bac0f !important;
-    background-image: radial-gradient(#306230 20%, transparent 20%) !important;
+.marquee-content:hover {
+    animation-play-state: paused;
 }
 
-body.theme-gameboy .battle-scene {
-    background: linear-gradient(to bottom, #8bac0f 0%, #8bac0f 60%, #306230 60%, #306230 100%) !important;
+.fav-item {
+    flex: 0 0 auto;
+    text-align: center;
+    background: #fff;
+    border: 3px solid #000;
+    padding: 10px;
+    width: 100px;
+    box-shadow: 4px 4px 0 #000;
 }
 
-body.theme-gameboy .dialog-box {
-    background-color: #0f380f !important;
-    color: #8bac0f !important;
-    border-top-color: #8bac0f !important;
+.fav-item img {
+    width: 60px;
+    height: 60px;
+    image-rendering: pixelated;
 }
 
-body.theme-gameboy .btn-action {
-    background-color: #8bac0f !important;
-    color: #0f380f !important;
-    border-color: #0f380f !important;
+.fav-item span {
+    display: block;
+    font-size: 7px;
+    margin-top: 8px;
+    color: #333;
+    text-transform: uppercase;
 }
 
-body.theme-gameboy .wild-pkmn-info {
-    background-color: #9bbc0f !important;
-    border-color: #0f380f !important;
-}
-
-.sprite-retro {
-    filter: sepia(1) hue-rotate(60deg) saturate(2) contrast(1.5) !important;
-}
-
-.sprite-shadow {
-    filter: brightness(0) !important;
-}
-
-.battle-scene.type-fire {
-    background: linear-gradient(to bottom, #f8d030 0%, #f08030 60%, #c03028 60%, #900000 100%) !important;
-}
-.battle-scene.type-water {
-    background: linear-gradient(to bottom, #def8f8 0%, #6890f0 60%, #385890 60%, #002058 100%) !important;
-}
-.battle-scene.type-grass {
-    background: linear-gradient(to bottom, #e0f8d0 0%, #78c850 60%, #489030 60%, #204818 100%) !important;
-}
-.battle-scene.type-electric {
-    background: linear-gradient(to bottom, #f8f878 0%, #f8d030 60%, #b8a038 60%, #786820 100%) !important;
-}
-.battle-scene.type-psychic {
-    background: linear-gradient(to bottom, #f8c0d0 0%, #f85888 60%, #a04058 60%, #682838 100%) !important;
-}
-.battle-scene.type-ice {
-    background: linear-gradient(to bottom, #d0f8e8 0%, #98d8d8 60%, #68a0a0 60%, #386060 100%) !important;
-}
-.battle-scene.type-dragon {
-    background: linear-gradient(to bottom, #d8d8f8 0%, #7038f8 60%, #483890 60%, #281848 100%) !important;
-}
-.battle-scene.type-dark {
-    background: linear-gradient(to bottom, #705848 0%, #483838 60%, #201818 60%, #101010 100%) !important;
-}
-.battle-scene.type-fairy {
-    background: linear-gradient(to bottom, #f8d8e8 0%, #ee99ac 60%, #906078 60%, #684058 100%) !important;
-}
-.battle-scene.type-poison {
-    background: linear-gradient(to bottom, #d880b8 0%, #a040a0 60%, #682868 60%, #401040 100%) !important;
-}
-.battle-scene.type-bug {
-    background: linear-gradient(to bottom, #d8e090 0%, #a8b820 60%, #687018 60%, #404810 100%) !important;
-}
-.battle-scene.type-rock {
-    background: linear-gradient(to bottom, #e0d0a0 0%, #b8a038 60%, #786820 60%, #484010 100%) !important;
-}
-.battle-scene.type-ground {
-    background: linear-gradient(to bottom, #f0e0a0 0%, #e0c068 60%, #886830 60%, #504018 100%) !important;
-}
-.battle-scene.type-ghost {
-    background: linear-gradient(to bottom, #a080c0 0%, #705898 60%, #483860 60%, #281830 100%) !important;
-}
-.battle-scene.type-fighting {
-    background: linear-gradient(to bottom, #f0a090 0%, #c03028 60%, #802018 60%, #481010 100%) !important;
-}
-.battle-scene.type-steel {
-    background: linear-gradient(to bottom, #d8d8e0 0%, #b8b8d0 60%, #787890 60%, #484858 100%) !important;
-}
-.battle-scene.type-flying {
-    background: linear-gradient(to bottom, #e0d8f8 0%, #a890f0 60%, #685898 60%, #403060 100%) !important;
-}
-.battle-scene.type-normal {
-    background: linear-gradient(to bottom, #e8e8e8 0%, #a8a8a8 60%, #787878 60%, #484848 100%) !important;
+@keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
