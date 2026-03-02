@@ -60,8 +60,8 @@
 
             .type-badge {
                 font-family: 'Press Start 2P';
-                font-size: 6px;
-                padding: 4px 6px;
+                font-size: 8px;   /* antes 6px */
+                padding: 5px 8px; /* un poco más de espacio */
                 border-radius: 4px;
                 color: #fff;
                 text-shadow: 1px 1px #000;
@@ -232,7 +232,7 @@
                             </div>
                             <img th:src="${pokemon.urlImagen}" class="pokemon-img" style="height: 80px; image-rendering: pixelated; position: relative; z-index: 2;">
                         </div>
-                        <div style="font-size: 8px; text-transform: uppercase; margin-bottom: 10px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
+                        <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
                         <div class="pokemon-types" th:attr="data-id=${pokemon.id}"></div>
                         <div class="d-flex gap-1">
                             <a th:href="@{/pokedex/detalle/{id}(id=${pokemon.id})}" class="btn btn-retro mt-2" onclick="captureAnimation(event, this)" style="text-decoration: none; line-height: 1.5; background-color: #4CAF50;">VER</a>
@@ -491,39 +491,39 @@
             function getTipoConEmoji(tipo) {
                 switch (tipo) {
                     case "fire":
-                        return "🔥 FUEGO";
+                        return "🔥 FIRE";
                     case "water":
-                        return "💧 AGUA";
+                        return "💧 WATER";
                     case "grass":
-                        return "🌿 PLANTA";
+                        return "🌿 GRASS";
                     case "electric":
-                        return "⚡ ELÉCTRICO";
+                        return "⚡ ELECTRIC";
                     case "ice":
-                        return "❄️ HIELO";
+                        return "❄️ ICE";
                     case "fighting":
-                        return "👊 LUCHA";
+                        return "👊 FIGHTING";
                     case "poison":
-                        return "☠️ VENENO";
+                        return "☠️ POISON";
                     case "ground":
-                        return "⛰️ TIERRA";
+                        return "⛰️ GROUND";
                     case "flying":
-                        return "🦅 VOLADOR";
+                        return "🦅 FLYING";
                     case "psychic":
-                        return "🧠 PSÍQUICO";
+                        return "🧠 PSYCHIC";
                     case "bug":
-                        return "🐛 BICHO";
+                        return "🐛 BUG";
                     case "rock":
-                        return "🧱 ROCA";
+                        return "🧱 ROCK";
                     case "ghost":
-                        return "👻 FANTASMA";
+                        return "👻 GHOST";
                     case "dragon":
-                        return "🐲 DRAGÓN";
+                        return "🐲 DRAGON";
                     case "dark":
-                        return "🌑 SINIESTRO";
+                        return "🌑 DARK";
                     case "steel":
-                        return "⚙️ ACERO";
+                        return "⚙️ STEEL";
                     case "fairy":
-                        return "✨ HADA";
+                        return "✨ FAIRY";
                     default:
                         return tipo.toUpperCase();
                 }
