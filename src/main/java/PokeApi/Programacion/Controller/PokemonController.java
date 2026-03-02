@@ -7,9 +7,11 @@ import PokeApi.Programacion.ML.Usuario;
 import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,51 +50,72 @@ public class PokemonController {
     public String mostrarPokedex(
             @RequestParam(defaultValue = "8") int limit,
             @RequestParam(defaultValue = "0") int offset,
-            Model model) {
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String region,
+            Model model, Principal principal) {
 
-        Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
-        model.addAttribute("pokemones", apiResult.Objects);
+        List<Pokemon> listaFinal = new ArrayList<>();
+
+        if ((nombre != null && !nombre.isEmpty())
+                || (type != null && !type.equals("all") && !type.isEmpty())
+                || (region != null && !region.equals("all") && !region.isEmpty())) {
+
+            List<Pokemon> resultados = pokemonService.buscarCombinado(nombre, type, region);
+            listaFinal = resultados.stream().skip(offset).limit(limit).collect(Collectors.toList());
+            model.addAttribute("totalResultados", resultados.size());
+        } else {
+            Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+            if (apiResult.Correct && apiResult.Objects != null) {
+                listaFinal = apiResult.Objects;
+            }
+        }
+
+        List<Integer> idsFavoritos = new ArrayList<>();
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+                if (favoritos != null) {
+                    for (Pokemon fav : favoritos) {
+                        idsFavoritos.add(fav.getId());
+                    }
+                }
+            }
+        }
+
+        model.addAttribute("pokemones", listaFinal);
+        model.addAttribute("capturados", idsFavoritos);
         model.addAttribute("currentOffset", offset);
         model.addAttribute("limit", limit);
-        
-        return "index";
-    }
+        model.addAttribute("nombreFiltro", nombre);
+        model.addAttribute("tipoFiltro", type);
+        model.addAttribute("regionFiltro", region);
 
-    @GetMapping("/pokedex/buscar")
-    public String buscarPokemon(@RequestParam String nombre, Model model) {
-        List<Pokemon> resultados = pokemonService.buscarPokemon(nombre);
-        List<Pokemon> limitados = resultados.stream().limit(8).toList();
-        model.addAttribute("pokemones", limitados);
-        model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", 8);
-        return "index";
-    }
-
-    @GetMapping("/pokedex/dual")
-    public String buscarDual(@RequestParam String type1, @RequestParam String type2, Model model) {
-        List<Pokemon> resultados = pokemonService.getByTwoTypes(type1, type2);
-        List<Pokemon> limitados = resultados.stream().limit(8).toList();
-        model.addAttribute("pokemones", limitados);
-        model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", 8);
-        return "index";
-    }
-
-    @GetMapping("/filtro")
-    public String filtrar(@RequestParam(required = false) String region,
-                          @RequestParam(required = false) String type,
-                          Model model) {
-        List<Pokemon> resultados = pokemonService.getByRegionAndType(region, type);
-        List<Pokemon> limitados = resultados.stream().limit(8).toList();
-        model.addAttribute("pokemones", limitados);
-        model.addAttribute("currentOffset", 0);
-        model.addAttribute("limit", 8);
         return "index";
     }
 
     @GetMapping("/pokedex/detalle/{id}")
-    public String verDetalle(@PathVariable int id, Model model) {
+    public String verDetalle(@PathVariable int id, Model model, Principal principal) { // Agrega Principal aquí
         Pokemon pokemon = pokemonService.getById(id);
+        String urlSonido = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/" + id + ".ogg";
+        pokemon.setUrlSonido(urlSonido);
+
+        // NUEVA LÓGICA: Verificar favoritos para el botón de la vista de detalle
+        List<Integer> idsFavoritos = new ArrayList<>();
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+                if (favoritos != null) {
+                    for (Pokemon fav : favoritos) {
+                        idsFavoritos.add(fav.getId());
+                    }
+                }
+            }
+        }
+
+        model.addAttribute("capturados", idsFavoritos); // Enviamos la lista
         model.addAttribute("pokemon", pokemon);
         return "detalle";
     }
@@ -127,11 +150,7 @@ public class PokemonController {
         try {
             Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
             Result result = pokemonService.Delete(idPokemon, usuario.getIdUsuario());
-            if (result.Correct) {
-                return "OK";
-            } else {
-                return "Error: " + result.ErrorMessage;
-            }
+            return result.Correct ? "OK" : "Error: " + result.ErrorMessage;
         } catch (Exception e) {
             return "Error al eliminar: " + e.getMessage();
         }
@@ -143,10 +162,7 @@ public class PokemonController {
     }
 
     @PostMapping("/registro")
-    public String procesarRegistro(@RequestParam String username,
-                                   @RequestParam String correo,
-                                   @RequestParam String password,
-                                   Model model) {
+    public String procesarRegistro(@RequestParam String username, @RequestParam String correo, @RequestParam String password, Model model) {
         if (usuarioDAO.getByCorreo(correo) != null) {
             model.addAttribute("error", "EL CORREO YA ESTA EN USO");
             return "registro";
@@ -167,8 +183,7 @@ public class PokemonController {
     public String verUsuarios(Model model) {
         List<Usuario> usuarios = usuarioDAO.getAllUsuarios();
         for (Usuario usuario : usuarios) {
-            List<Pokemon> favs = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
-            usuario.setFavoritos(favs);
+            usuario.setFavoritos(pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario()));
         }
         model.addAttribute("usuarios", usuarios);
         return "usuarios";
@@ -198,9 +213,6 @@ public class PokemonController {
             if (datosApi != null) {
                 pokemon.setNombre(datosApi.getNombre());
                 pokemon.setUrlImagen(datosApi.getUrlImagen());
-            } else {
-                pokemon.setNombre("???");
-                pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + pokemon.getId() + ".png");
             }
         }
         model.addAttribute("ranking", ranking);
@@ -211,8 +223,8 @@ public class PokemonController {
     @GetMapping("/pokedex/api/trivia-dia")
     @ResponseBody
     public Pokemon getTriviaJson() {
-        int idAleatorio = (int) (Math.random() * 1350) + 1;
-        return pokemonService.getById(idAleatorio); 
+        int idAleatorio = (int) (Math.random() * 1010) + 1;
+        return pokemonService.getById(idAleatorio);
     }
 
     @PostMapping("/pokedex/api/trivia-validar")

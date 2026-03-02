@@ -90,7 +90,7 @@
             padding: 15px;
             text-align: center;
             box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            transition: transform 0.3s, opacity 0.3s;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -147,6 +147,7 @@
             background-color: #e3350d;
             width: 100%;
             margin-top: auto;
+            border: none;
         }
         .btn-release:hover {
             background-color: #cc2f0b;
@@ -175,14 +176,14 @@
         <div class="trainer-title" th:text="'TARJETA DE ENTRENADOR: ' + ${usuario}"></div>
         <div class="trainer-info">
             <div class="stat-box">
-                CAPTURADOS: <span th:text="${#lists.size(favoritos)}"></span>
+                CAPTURADOS: <span id="contadorCapturados" th:text="${#lists.size(favoritos)}"></span>
             </div>
             <a th:href="@{/pokedex}" class="btn-retro btn-back">VOLVER A POKEDEX</a>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        <div class="col" th:each="pokemon : ${favoritos}">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="pokemonGrid">
+        <div class="col pokemon-col" th:each="pokemon : ${favoritos}" th:id="'col-' + ${pokemon.id}">
             <div class="pokemon-card">
                 <div class="img-container">
                     <img th:src="${pokemon.urlImagen}" alt="Pokemon">
@@ -190,18 +191,61 @@
                 
                 <div class="pkmn-name" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
 
-                <form th:action="@{/pokedex/eliminar}" method="post">
-                    <input type="hidden" name="idPokemon" th:value="${pokemon.id}">
-                    <button type="submit" class="btn-retro btn-release">LIBERAR</button>
-                </form>
+                <button type="button" class="btn-retro btn-release" th:onclick="'liberarPokemon(' + ${pokemon.id} + ')'">LIBERAR</button>
             </div>
         </div>
     </div>
     
-    <div th:if="${#lists.isEmpty(favoritos)}" class="empty-state">
+    <div id="emptyState" class="empty-state" th:style="${#lists.isEmpty(favoritos)} ? 'display:block;' : 'display:none;'">
         <p>AÚN NO HAS CAPTURADO NINGÚN POKÉMON.<br><br>¡VE A LA HIERBA ALTA Y ATRAPA ALGUNOS!</p>
     </div>
 
 </div>
+
+<script>
+    function liberarPokemon(id) {
+        if (!confirm("¿Estás seguro de que quieres liberar a este Pokémon?")) return;
+
+        const formData = new FormData();
+        formData.append('idPokemon', id);
+
+        fetch('/pokedex/eliminar', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (data === "OK") {
+                // 1. Ocultar y remover la tarjeta del HTML
+                const colElement = document.getElementById('col-' + id);
+                if (colElement) {
+                    colElement.style.opacity = '0';
+                    colElement.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        colElement.remove();
+                        actualizarContador();
+                    }, 300); // Espera a que termine la animación css
+                }
+            } else {
+                alert("No se pudo liberar: " + data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Ocurrió un error al intentar liberar al Pokémon.");
+        });
+    }
+
+    function actualizarContador() {
+        const grid = document.getElementById('pokemonGrid');
+        const remainingCols = grid.querySelectorAll('.pokemon-col').length;
+        
+        document.getElementById('contadorCapturados').innerText = remainingCols;
+
+        if (remainingCols === 0) {
+            document.getElementById('emptyState').style.display = 'block';
+        }
+    }
+</script>
 </body>
 </html>

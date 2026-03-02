@@ -88,7 +88,7 @@
             width: 30vw;
             max-width: 400px;
             z-index: 5;
-            transition: opacity 0.2s ease, filter 0.3s ease;
+            transition: opacity 0.2s ease, filter 0.3s ease, transform 0.5s ease;
             animation: appearFromBall 0.8s ease-out, bouncePkmn 2s infinite 0.8s ease-in-out;
         }
 
@@ -162,12 +162,17 @@
             box-shadow: 2px 2px 0 #000;
         }
 
+        .btn-action:disabled {
+            background-color: #585858;
+            box-shadow: none;
+            transform: none;
+            pointer-events: none;
+            color: white;
+        }
+
         #pokeball-container {
             display: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             z-index: 100;
         }
     </style>
@@ -268,8 +273,9 @@
                     th:data-id="${pokemon.id}"
                     th:data-nombre="${pokemon.nombre}"
                     th:data-img="${pokemon.urlImagen}"
+                    th:disabled="${capturados != null and capturados.contains(pokemon.id)}"
+                    th:text="${capturados != null and capturados.contains(pokemon.id)} ? 'ATRAPADO' : 'CAPTURAR'"
                     onclick="capturarEnBatalla(this)">
-                CAPTURAR
             </button>
             <a th:href="@{/pokedex}" class="btn-action">HUIR</a>
         </div>
@@ -402,14 +408,18 @@
             toggleDetails(); 
         }
 
-        if (ballContainer && ball) {
+        if (ballContainer && ball && pokemonSprite) {
+            const rect = pokemonSprite.getBoundingClientRect();
+            ballContainer.style.top = (rect.top + rect.height / 2) + 'px';
+            ballContainer.style.left = (rect.left + rect.width / 2) + 'px';
+            ballContainer.style.transform = 'translate(-50%, -50%)';
+            
             ballContainer.style.display = 'block';
             ball.classList.add('throw-animation');
         }
 
         setTimeout(() => {
             if (pokemonSprite) {
-                pokemonSprite.style.transition = '0.5s';
                 pokemonSprite.style.opacity = '0';
                 pokemonSprite.style.transform = 'scale(0.1) rotate(360deg)';
             }
@@ -442,18 +452,11 @@
                     .then(response => response.text())
                     .then(data => {
                         if (data === "OK") {
-                            let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
-                            if (!captured.includes(id.toString())) {
-                                captured.push(id.toString());
-                                localStorage.setItem('myCapturedPkmn', JSON.stringify(captured));
-                            }
-
                             if (dialogText) {
                                 dialogText.innerText = `¡${apodo.toUpperCase()} se ha unido a tu equipo!`;
                             }
                             btn.innerText = "ATRAPADO";
                             btn.disabled = true;
-                            btn.style.backgroundColor = "#585858";
                             
                             setTimeout(() => {
                                 if (ballContainer) ballContainer.style.opacity = '0';
@@ -498,21 +501,18 @@
             setSceneTheme(savedTheme);
         }
 
-        let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
-        if (captured.includes(pkmnId.toString())) {
-            const btn = document.getElementById('btnCapturar');
-            if (btn) {
-                btn.innerText = "ATRAPADO";
-                btn.disabled = true;
-                btn.style.backgroundColor = "#585858";
-            }
-        }
-
-        const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/${pkmnId}.ogg`);
+        const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pkmnId}.ogg`);
         cry.volume = 0.4;
-        cry.play().catch(err => {
-            console.log("El navegador bloqueó el audio automático.");
-        });
+        const playPromise = cry.play().catch(error => console.error("Error audio:", error));  
+
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Auto-play prevenido. Reproduciendo tras interacción.");
+                document.addEventListener('click', () => {
+                    cry.play();
+                }, { once: true });
+            });
+        }
 
         const typeColors = {
             normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
