@@ -226,13 +226,31 @@
             }
 
             .type-badge {
-                padding: 4px 8px;
-                font-size: 7px;
-                border: 3px solid #585858;
-                box-shadow: 3px 3px 0 #000;
+                padding: 6px 12px;
+                border-radius: 10px;
+                border: 2px solid #222;
+                box-shadow: 2px 2px 0 #000;
                 color: #fff;
-                font-weight: bold;
+                font-weight: 800;
                 text-transform: uppercase;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 14px;
+                letter-spacing: 0.5px;
+            }
+
+            .type-emoji {
+                font-size: 16px;
+            }
+
+            .type-text {
+                font-size: 14px;
+            }
+
+            .type-badge:hover {
+                transform: translateY(-2px);
+                transition: 0.2s ease;
             }
         </style>
     </head>
@@ -615,6 +633,26 @@
                     rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705848',
                     steel: '#B7B7CE', fairy: '#D685AD'
             };
+            const typeEmojis = {
+            normal: "⚪",
+                    fire: "🔥",
+                    water: "💧",
+                    electric: "⚡",
+                    grass: "🌿",
+                    ice: "❄️",
+                    fighting: "🥊",
+                    poison: "☠️",
+                    ground: "🌎",
+                    flying: "🕊️",
+                    psychic: "🔮",
+                    bug: "🐛",
+                    rock: "🪨",
+                    ghost: "👻",
+                    dragon: "🐉",
+                    dark: "🌑",
+                    steel: "⚙️",
+                    fairy: "✨"
+            };
             fetch(`https://pokeapi.co/api/v2/pokemon/${pkmnId}`)
                     .then(res => res.json())
                     .then(async data => {
@@ -633,14 +671,21 @@
                     if (movesDiv) movesDiv.innerHTML = "";
                     if (weaknessDiv) weaknessDiv.innerHTML = "";
                     /* =========================
-                     TIPOS DEBAJO DEL NOMBRE
+                     TIPOS DEBAJO DEL NOMBRE (CON EMOJIS)
                      ========================= */
                     if (typeContainer) {
                     types.forEach(t => {
                     const badge = document.createElement("div");
                     badge.classList.add("type-badge");
                     badge.style.background = typeColors[t.type.name] || "#777";
-                    badge.innerText = t.type.name.toUpperCase();
+                    badge.innerHTML = `
+    <span class="type-emoji">
+        ${typeEmojis[t.type.name] || "❔"}
+    </span>
+    <span class="type-text">
+        ${t.type.name.toUpperCase()}
+    </span>
+`;
                     typeContainer.appendChild(badge);
                     });
                     }

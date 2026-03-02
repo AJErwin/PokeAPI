@@ -50,6 +50,57 @@
                     opacity: 0;
                 }
             }
+            .pokemon-types {
+                display: flex;
+                justify-content: center;
+                gap: 4px;
+                margin-bottom: 6px;
+                flex-wrap: wrap;
+            }
+
+            .type-badge {
+                font-family: 'Press Start 2P';
+                font-size: 6px;
+                padding: 4px 6px;
+                border-radius: 4px;
+                color: #fff;
+                text-shadow: 1px 1px #000;
+                border: 2px solid #000;
+            }
+
+            /* colores */
+            .type-fire {
+                background: #F08030;
+            }
+            .type-water {
+                background: #6890F0;
+            }
+            .type-grass {
+                background: #78C850;
+            }
+            .type-electric {
+                background: #F8D030;
+                color:#000;
+            }
+            .type-poison {
+                background: #A040A0;
+            }
+            .type-flying {
+                background: #A890F0;
+            }
+            .type-dragon {
+                background: #7038F8;
+            }
+            .type-dark {
+                background: #705848;
+            }
+            .type-steel {
+                background: #B8B8D0;
+                color:#000;
+            }
+            .type-fairy {
+                background: #EE99AC;
+            }
         </style>
     </head>
     <body>
@@ -182,6 +233,7 @@
                             <img th:src="${pokemon.urlImagen}" class="pokemon-img" style="height: 80px; image-rendering: pixelated; position: relative; z-index: 2;">
                         </div>
                         <div style="font-size: 8px; text-transform: uppercase; margin-bottom: 10px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
+                        <div class="pokemon-types" th:attr="data-id=${pokemon.id}"></div>
                         <div class="d-flex gap-1">
                             <a th:href="@{/pokedex/detalle/{id}(id=${pokemon.id})}" class="btn btn-retro mt-2" onclick="captureAnimation(event, this)" style="text-decoration: none; line-height: 1.5; background-color: #4CAF50;">VER</a>
                             <div style="flex-grow: 1;">
@@ -403,6 +455,78 @@
                             })
                             .catch(err => console.error(err));
                 };
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+
+                const typeContainers = document.querySelectorAll(".pokemon-types");
+
+                typeContainers.forEach(container => {
+
+                    const id = container.getAttribute("data-id");
+
+                    fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+                            .then(res => res.json())
+                            .then(data => {
+
+                                data.types.forEach(t => {
+
+                                    const tipo = t.type.name;
+
+                                    const span = document.createElement("span");
+                                    span.classList.add("type-badge", `type-${tipo}`);
+
+                                    span.textContent = getTipoConEmoji(tipo);
+
+                                    container.appendChild(span);
+                                });
+
+                            })
+                            .catch(err => console.log("Error cargando tipos", err));
+
+                });
+
+            });
+
+            function getTipoConEmoji(tipo) {
+                switch (tipo) {
+                    case "fire":
+                        return "🔥 FUEGO";
+                    case "water":
+                        return "💧 AGUA";
+                    case "grass":
+                        return "🌿 PLANTA";
+                    case "electric":
+                        return "⚡ ELÉCTRICO";
+                    case "ice":
+                        return "❄️ HIELO";
+                    case "fighting":
+                        return "👊 LUCHA";
+                    case "poison":
+                        return "☠️ VENENO";
+                    case "ground":
+                        return "⛰️ TIERRA";
+                    case "flying":
+                        return "🦅 VOLADOR";
+                    case "psychic":
+                        return "🧠 PSÍQUICO";
+                    case "bug":
+                        return "🐛 BICHO";
+                    case "rock":
+                        return "🧱 ROCA";
+                    case "ghost":
+                        return "👻 FANTASMA";
+                    case "dragon":
+                        return "🐲 DRAGÓN";
+                    case "dark":
+                        return "🌑 SINIESTRO";
+                    case "steel":
+                        return "⚙️ ACERO";
+                    case "fairy":
+                        return "✨ HADA";
+                    default:
+                        return tipo.toUpperCase();
+                }
             }
         </script>
     </body>
