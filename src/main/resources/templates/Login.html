@@ -17,202 +17,112 @@
                 align-items:center;
                 font-family:'Orbitron', sans-serif;
                 overflow:hidden;
-                background:#f2f2f2;
             }
 
-            /* Fondo */
-            .background-layer{
+            /* 🔥 Fondo difuminado elegante */
+            body::before{
+                content:"";
                 position:fixed;
-                inset:0;
-                background: linear-gradient(135deg,#c40000 50%,#ffffff 50%);
-                opacity:0;
-                transition:opacity .8s ease;
-                z-index:-2;
+                width:100%;
+                height:100%;
+                background: linear-gradient(
+                    135deg,
+                    #c40000 50%,
+                    #dcdcdc 50%
+                    );
+                filter: blur(10px);
+                transform: scale(1.1);
+                z-index:-1;
             }
 
-            .active .background-layer{
-                opacity:1;
-            }
-
-            /* FLASH */
-            .flash{
-                position:fixed;
-                inset:0;
-                background:white;
-                opacity:0;
-                pointer-events:none;
-                z-index:10;
-            }
-
-            .flash.active{
-                animation:flashEffect .5s ease;
-            }
-
-            @keyframes flashEffect{
-                0%{
-                    opacity:0;
-                }
-                40%{
-                    opacity:1;
-                }
-                100%{
-                    opacity:0;
-                }
-            }
-
-            /* Pokeball */
+            /* Pokebola */
             .pokeball{
-                width:420px;
-                height:420px;
+                width:480px;
+                height:480px;
+                border-radius:50%;
+                background: linear-gradient(to bottom, #ff1a1a 50%, #ffffff 50%);
+                border:14px solid #000;
                 position:relative;
-                transition:opacity .6s ease .9s;
+                box-shadow:0 30px 60px rgba(0,0,0,0.45);
+                display:flex;
+                justify-content:center;
+                align-items:center;
             }
 
-            /* Vibración */
-            .shake{
-                animation:shake .4s ease;
-            }
-
-            @keyframes shake{
-                0%{
-                    transform:translateX(0);
-                }
-                25%{
-                    transform:translateX(-6px);
-                }
-                50%{
-                    transform:translateX(6px);
-                }
-                75%{
-                    transform:translateX(-4px);
-                }
-                100%{
-                    transform:translateX(0);
-                }
-            }
-
-            /* Mitades */
-            .top-half{
+            .pokeball::before{
+                content:"";
                 position:absolute;
                 width:100%;
-                height:50%;
-                background:linear-gradient(to bottom,#ff1a1a,#b80000);
-                border:14px solid black;
-                border-bottom:none;
-                border-radius:210px 210px 0 0;
-                transition:transform .9s ease;
-            }
-
-            .bottom-half{
-                position:absolute;
-                bottom:0;
-                width:100%;
-                height:50%;
-                background:white;
-                border:14px solid black;
-                border-top:none;
-                border-radius:0 0 210px 210px;
-                transition:transform .9s ease;
-            }
-
-            .line{
-                position:absolute;
+                height:18px;
+                background:#000;
                 top:50%;
-                width:100%;
-                height:14px;
-                background:black;
                 transform:translateY(-50%);
-                transition:opacity .4s ease;
+                z-index:1;
             }
 
-            /* Botón */
             .center-button{
                 position:absolute;
-                top:50%;
-                left:50%;
-                transform:translate(-50%,-50%);
-                width:95px;
-                height:95px;
+                width:110px;
+                height:110px;
                 background:white;
                 border-radius:50%;
-                border:14px solid black;
-                cursor:pointer;
-                box-shadow:0 0 0 rgba(255,0,0,0);
-                transition:.2s;
+                border:16px solid black;
+                z-index:2;
             }
 
-            .center-button.glow{
-                box-shadow:0 0 25px rgba(255,0,0,.9);
-            }
-
-            .center-button:active{
-                transform:translate(-50%,-50%) scale(.85);
-            }
-
-            /* Humo */
-            .smoke{
+            .center-button::after{
+                content:"";
                 position:absolute;
+                width:45px;
+                height:45px;
+                background:#e6e6e6;
+                border-radius:50%;
                 top:50%;
                 left:50%;
-                width:200px;
-                height:200px;
-                background:radial-gradient(circle,rgba(255,255,255,.8) 0%,transparent 70%);
                 transform:translate(-50%,-50%);
-                opacity:0;
-                pointer-events:none;
+                box-shadow: inset 0 0 12px rgba(0,0,0,0.4);
             }
 
-            .smoke.active{
-                animation:smokeAnim 1s ease forwards;
-            }
-
-            @keyframes smokeAnim{
-                0%{
-                    opacity:1;
-                    transform:translate(-50%,-50%) scale(.5);
-                }
-                100%{
-                    opacity:0;
-                    transform:translate(-50%,-60%) scale(1.4);
-                }
-            }
-
-            /* Apertura */
-            .active .top-half{
-                transform:translateY(-200px);
-            }
-            .active .bottom-half{
-                transform:translateY(200px);
-            }
-            .active .line{
-                opacity:0;
-            }
-            .active .pokeball{
-                opacity:0;
-            }
-
-            /* Login */
-            .login-container{
+            .content{
                 position:absolute;
-                opacity:0;
-                transform:translateY(30px);
-                transition:all .8s ease 1s;
+                width:70%;
+                z-index:3;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
                 text-align:center;
             }
 
-            .active .login-container{
-                opacity:1;
-                transform:translateY(0);
+            .title{
+                position:absolute;
+                top:70px;
+                color:white;
+                text-shadow:2px 2px 4px rgba(0,0,0,0.6);
             }
 
-            .title{
-                margin-bottom:25px;
+            .title h2{
+                margin:0;
+                letter-spacing:2px;
+                font-size:20px;
+            }
+
+            .subtitle{
+                font-size:12px;
+                opacity:.9;
+                width:100%;
+                text-align:center;
+            }
+
+            .form-area{
+                margin-top:40px;
+                width:100%;
             }
 
             input{
-                width:280px;
+                width:100%;
                 padding:12px;
-                margin-bottom:15px;
+                margin-bottom:14px;
                 border-radius:14px;
                 border:none;
                 text-align:center;
@@ -222,18 +132,18 @@
 
             input:focus{
                 outline:none;
-                box-shadow:0 0 12px #ff1a1a;
+                box-shadow:0 0 10px #ff1a1a;
             }
 
             .btn{
-                width:300px;
-                padding:10px;
+                width:100%;
+                padding:12px;
                 border-radius:25px;
                 border:none;
                 font-weight:700;
                 cursor:pointer;
                 letter-spacing:1px;
-                font-size:13px;
+                transition:.2s;
             }
 
             .btn-login{
@@ -242,9 +152,26 @@
                 margin-bottom:10px;
             }
 
+            .btn-login:hover{
+                background:#b80000;
+                transform:scale(1.03);
+            }
+
             .btn-register{
                 background:black;
                 color:white;
+            }
+
+            .btn-register:hover{
+                background:#222;
+                transform:scale(1.03);
+            }
+
+            @media(max-width:600px){
+                .pokeball{
+                    width:340px;
+                    height:340px;
+                }
             }
 
         </style>
@@ -252,77 +179,37 @@
 
     <body>
 
-        <div class="background-layer"></div>
-        <div class="flash" id="flash"></div>
+        <div class="pokeball">
 
-        <div class="pokeball" id="pokeball">
-            <div class="top-half"></div>
-            <div class="bottom-half"></div>
-            <div class="line"></div>
-            <div class="center-button" id="openBtn"></div>
-            <div class="smoke" id="smoke"></div>
-        </div>
-
-        <div class="login-container">
             <div class="title">
                 <h2>POKEDEX ACCESS</h2>
-                <div style="font-size:13px;opacity:.8;">Centro Pokémon</div>
+                <div class="subtitle">Centro Pokémon</div>
             </div>
 
-            <form th:action="@{/login}" method="post">
-                <input type="email" name="correo" placeholder="Correo electrónico" required><br>
-                <input type="password" name="password" placeholder="Contraseña" required><br>
-                <button class="btn btn-login">Iniciar Sesión</button>
-            </form>
+            <div class="center-button"></div>
 
-            <a th:href="@{/registro}">
-                <button type="button" class="btn btn-register">Registrarse</button>
-            </a>
+            <div class="content">
+
+                <div class="form-area">
+
+                    <form th:action="@{/login}" method="post">
+
+                        <input type="email" name="correo" placeholder="Correo electrónico" required>
+
+                        <input type="password" name="password" placeholder="Contraseña" required>
+
+                        <button class="btn btn-login">Iniciar Sesión</button>
+
+                    </form>
+
+                    <a th:href="@{/registro}" style="text-decoration:none;">
+                        <button class="btn btn-register">Registrarse</button>
+                    </a>
+
+                </div>
+            </div>
+
         </div>
-
-        <!-- AUDIO LOCAL (Spring Boot static/audio/) -->
-        <audio id="pokeballSound" src="/audio/pokeball.mp3" preload="auto"></audio>
-
-        <script>
-
-            const btn = document.getElementById("openBtn");
-            const sound = document.getElementById("pokeballSound");
-            const flash = document.getElementById("flash");
-            const smoke = document.getElementById("smoke");
-            const pokeball = document.getElementById("pokeball");
-
-            let activated = false;
-
-            btn.addEventListener("click", function () {
-
-                if (activated)
-                    return;
-                activated = true;
-
-                btn.classList.add("glow");
-                pokeball.classList.add("shake");
-
-                setTimeout(() => {
-
-                    document.body.classList.add("active");
-
-                    flash.classList.remove("active");
-                    void flash.offsetWidth;
-                    flash.classList.add("active");
-
-                    smoke.classList.add("active");
-
-                    if (sound) {
-                        sound.currentTime = 0;
-                        sound.play().catch(() => {
-                        });
-                    }
-
-                }, 400);
-
-            });
-
-        </script>
 
     </body>
 </html>
