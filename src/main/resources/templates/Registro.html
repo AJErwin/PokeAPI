@@ -5,180 +5,213 @@
         <title>Pokedex - Registro</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <!-- Fuente estilo Pokémon -->
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
         <style>
-            body {
-                margin: 0;
-                height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-family: 'Orbitron', sans-serif;
 
-                /* Fondo diagonal rojo/blanco */
-                background: linear-gradient(
-                    135deg,
-                    #ff1a1a 50%,
-                    #ffffff 50%
-                    );
+            body{
+                margin:0;
+                height:100vh;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                font-family:'Orbitron', sans-serif;
+
+                /* 🔥 Fondo más elegante */
+                background: linear-gradient(135deg, #c40000 50%, #dcdcdc 50%);
             }
 
-            /* ============================= */
-            /* POKEBOLA PRINCIPAL */
-            /* ============================= */
-
-            .pokeball-container {
-                width: 520px;
-                height: 520px;
-                border-radius: 50%;
+            /* Pokebola */
+            .pokeball{
+                width:480px;
+                height:480px;
+                border-radius:50%;
                 background: linear-gradient(to bottom, #ff1a1a 50%, #ffffff 50%);
-                position: relative;
-                border: 12px solid black;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-                overflow: hidden;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                border:14px solid #000;
+                position:relative;
+                box-shadow:0 30px 60px rgba(0,0,0,0.45);
+                display:flex;
+                justify-content:center;
+                align-items:center;
             }
 
-            /* Línea negra central */
-            .pokeball-divider {
-                position: absolute;
-                width: 100%;
-                height: 18px;
-                background: black;
-                top: 50%;
-                transform: translateY(-50%);
-                z-index: 1;
+            /* Línea central */
+            .pokeball::before{
+                content:"";
+                position:absolute;
+                width:100%;
+                height:18px;
+                background:#000;
+                top:50%;
+                transform:translateY(-50%);
+                z-index:1;
             }
 
             /* Botón central */
-            .pokeball-button {
-                width: 120px;
-                height: 120px;
-                background: white;
-                border-radius: 50%;
-                border: 18px solid black;
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                box-shadow: 0 0 25px rgba(0,0,0,0.6);
-                z-index: 2;
+            .center-button{
+                position:absolute;
+                width:110px;
+                height:110px;
+                background:white;
+                border-radius:50%;
+                border:16px solid black;
+                z-index:2;
             }
 
-            .pokeball-button::after {
-                content: "";
-                position: absolute;
-                width: 55px;
-                height: 55px;
-                background: #e6e6e6;
-                border-radius: 50%;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
+            .center-button::after{
+                content:"";
+                position:absolute;
+                width:45px;
+                height:45px;
+                background:#e6e6e6;
+                border-radius:50%;
+                top:50%;
+                left:50%;
+                transform:translate(-50%,-50%);
+                box-shadow: inset 0 0 12px rgba(0,0,0,0.4);
             }
 
-            /* Contenedor del formulario */
-            .form-wrapper {
-                position: absolute;
-                width: 320px;
-                text-align: center;
-                z-index: 3;
+            /* Contenido */
+            .content{
+                position:absolute;
+                width:72%;
+                text-align:center;
+                z-index:3;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
             }
 
-            h2 {
-                margin-bottom: 20px;
-                color: black;
-                letter-spacing: 1px;
+            /* Título */
+            .title{
+                position:absolute;
+                top:95px;   /* 🔥 Lo bajamos */
+                width:100%;
+                text-align:center;
+                color:white;
             }
 
-            input {
-                width: 100%;
-                padding: 12px;
-                margin-bottom: 12px;
-                border-radius: 10px;
-                border: 1px solid #ccc;
-                font-size: 14px;
+            .title h2{
+                margin:0;
+                font-size:18px;
+                letter-spacing:1.5px;
             }
 
-            input:focus {
-                outline: none;
-                border: 2px solid #ff1a1a;
+            /* Área formulario */
+            .form-area{
+                margin-top:60px;
+                width:100%;
             }
 
-            .btn-pokemon {
-                width: 100%;
-                padding: 12px;
-                border-radius: 25px;
-                border: none;
-                font-weight: 600;
-                cursor: pointer;
-                margin-top: 5px;
-                transition: 0.2s;
+            input{
+                width:100%;
+                padding:12px;
+                margin-bottom:14px;
+                border-radius:14px;
+                border:none;
+                text-align:center;
+                font-size:14px;
+                box-shadow:0 5px 15px rgba(0,0,0,0.2);
             }
 
-            .btn-login {
-                background: #ff1a1a;
-                color: white;
+            input:focus{
+                outline:none;
+                box-shadow:0 0 10px #ff1a1a;
             }
 
-            .btn-login:hover {
-                background: #cc0000;
+            /* Botones */
+            .btn{
+                width:100%;
+                padding:12px;
+                border-radius:25px;
+                border:none;
+                font-weight:700;
+                cursor:pointer;
+                letter-spacing:1px;
+                transition:.2s;
             }
 
-            .btn-register {
-                background: black;
-                color: white;
+            .btn-main{
+                background:#ff1a1a;
+                color:white;
+                margin-bottom:10px;
             }
 
-            .btn-register:hover {
-                background: #333;
+            .btn-main:hover{
+                background:#b80000;
+                transform:scale(1.03);
             }
 
-            .success-msg {
-                color: green;
-                margin-bottom: 10px;
+            .btn-secondary{
+                background:black;
+                color:white;
             }
 
-            .error-msg {
-                color: darkred;
-                margin-bottom: 10px;
+            .btn-secondary:hover{
+                background:#222;
+                transform:scale(1.03);
             }
+
+            /* Mensajes */
+            .success-msg{
+                color:#006400;
+                margin-bottom:10px;
+                font-size:13px;
+            }
+
+            .error-msg{
+                color:#8b0000;
+                margin-bottom:10px;
+                font-size:13px;
+            }
+
+            /* Responsive */
+            @media(max-width:600px){
+                .pokeball{
+                    width:340px;
+                    height:340px;
+                }
+            }
+
         </style>
     </head>
 
     <body>
 
-        <div class="pokeball-container">
+        <div class="pokeball">
 
-            <div class="pokeball-divider"></div>
-            <div class="pokeball-button"></div>
+            <div class="center-button"></div>
 
-            <div class="form-wrapper">
+            <div class="title">
                 <h2>REGISTRO NUEVO ENTRENADOR</h2>
+            </div>
 
-                <div th:if="${exito}" class="success-msg" th:text="${exito}"></div>
-                <div th:if="${error}" class="error-msg" th:text="${error}"></div>
+            <div class="content">
 
-                <form th:action="@{/registro}" method="post">
-                    <input type="text" name="username" placeholder="USUARIO" required autofocus>
-                    <input type="email" name="correo" placeholder="CORREO" required>
-                    <input type="password" name="password" placeholder="PASSWORD" required>
+                <div class="form-area">
 
-                    <button type="submit" class="btn-pokemon btn-login">
-                        CREAR CUENTA
-                    </button>
-                </form>
+                    <div th:if="${exito}" class="success-msg" th:text="${exito}"></div>
+                    <div th:if="${error}" class="error-msg" th:text="${error}"></div>
 
-                <a th:href="@{/login}" style="text-decoration: none;">
-                    <button class="btn-pokemon btn-register" type="button">
-                        VOLVER AL LOGIN
-                    </button>
-                </a>
+                    <form th:action="@{/registro}" method="post">
+
+                        <input type="text" name="username" placeholder="USUARIO" required>
+                        <input type="email" name="correo" placeholder="CORREO" required>
+                        <input type="password" name="password" placeholder="PASSWORD" required>
+
+                        <button type="submit" class="btn btn-main">
+                            CREAR CUENTA
+                        </button>
+                    </form>
+
+                    <a th:href="@{/login}" style="text-decoration:none;">
+                        <button type="button" class="btn btn-secondary">
+                            VOLVER AL LOGIN
+                        </button>
+                    </a>
+
+                </div>
+
             </div>
 
         </div>
