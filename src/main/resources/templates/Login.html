@@ -79,7 +79,7 @@
                 position:absolute;
                 width:70%;
                 z-index:3;
-                display:none; /* oculto al inicio */
+                display:none;
                 flex-direction:column;
                 align-items:center;
                 justify-content:center;
@@ -161,7 +161,6 @@
                 transform:scale(1.03);
             }
 
-            /* Animación de giro */
             .rotate {
                 animation: spin 1s linear forwards;
             }
@@ -226,21 +225,35 @@
             const content = document.getElementById('content');
             const title = document.getElementById('title');
 
+            // Lista de cries de Pokémon como sonido de batalla
+            const battleSounds = [
+                'https://play.pokemonshowdown.com/audio/cries/pikachu.mp3',
+                'https://play.pokemonshowdown.com/audio/cries/charizard.mp3',
+                'https://play.pokemonshowdown.com/audio/cries/bulbasaur.mp3',
+                'https://play.pokemonshowdown.com/audio/cries/squirtle.mp3',
+                'https://play.pokemonshowdown.com/audio/cries/jigglypuff.mp3'
+            ];
+
             centerBtn.addEventListener('click', () => {
+                // Elegir un sonido aleatorio
+                const soundSrc = battleSounds[Math.floor(Math.random() * battleSounds.length)];
+                const audio = new Audio(soundSrc);
+                audio.volume = 0.7;
+                audio.play();
+
                 // Girar la Pokeball
                 pokeball.classList.add('rotate');
 
                 // Esperar el giro completo
                 setTimeout(() => {
-                    // Mostrar el login
+                    // Mostrar login
                     content.style.display = 'flex';
                     title.style.opacity = 1;
 
-                    // Pokeball sigue girando lentamente
+                    // Mantener giro lento después
                     pokeball.style.transition = 'transform 3s linear';
                     pokeball.style.transform = 'rotate(360deg)';
-
-                }, 1000); // coincide con la animación de spin
+                }, 1000);
             });
         </script>
 
