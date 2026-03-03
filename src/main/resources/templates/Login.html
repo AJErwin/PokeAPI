@@ -8,7 +8,6 @@
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
         <style>
-
             body{
                 margin:0;
                 height:100vh;
@@ -17,25 +16,10 @@
                 align-items:center;
                 font-family:'Orbitron', sans-serif;
                 overflow:hidden;
+                background: linear-gradient(135deg, #c40000 50%, #dcdcdc 50%);
             }
 
-            /* 🔥 Fondo difuminado elegante */
-            body::before{
-                content:"";
-                position:fixed;
-                width:100%;
-                height:100%;
-                background: linear-gradient(
-                    135deg,
-                    #c40000 50%,
-                    #dcdcdc 50%
-                    );
-                filter: blur(10px);
-                transform: scale(1.1);
-                z-index:-1;
-            }
-
-            /* Pokebola */
+            /* 🔥 Pokeball */
             .pokeball{
                 width:480px;
                 height:480px;
@@ -47,6 +31,8 @@
                 display:flex;
                 justify-content:center;
                 align-items:center;
+                flex-direction:column;
+                transition: transform 1s ease;
             }
 
             .pokeball::before{
@@ -68,6 +54,8 @@
                 border-radius:50%;
                 border:16px solid black;
                 z-index:2;
+                cursor:pointer;
+                transition: transform 0.3s ease;
             }
 
             .center-button::after{
@@ -83,11 +71,15 @@
                 box-shadow: inset 0 0 12px rgba(0,0,0,0.4);
             }
 
+            .center-button:active{
+                transform: scale(0.9);
+            }
+
             .content{
                 position:absolute;
                 width:70%;
                 z-index:3;
-                display:flex;
+                display:none; /* oculto al inicio */
                 flex-direction:column;
                 align-items:center;
                 justify-content:center;
@@ -96,9 +88,11 @@
 
             .title{
                 position:absolute;
-                top:70px;
+                top:30px;
                 color:white;
                 text-shadow:2px 2px 4px rgba(0,0,0,0.6);
+                opacity:0;
+                transition: opacity 1s ease;
             }
 
             .title h2{
@@ -167,49 +161,88 @@
                 transform:scale(1.03);
             }
 
+            /* Animación de giro */
+            .rotate {
+                animation: spin 1s linear forwards;
+            }
+
+            @keyframes spin{
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
             @media(max-width:600px){
                 .pokeball{
                     width:340px;
                     height:340px;
                 }
-            }
 
+                .center-button{
+                    width:80px;
+                    height:80px;
+                    border-width:12px;
+                }
+
+                .center-button::after{
+                    width:35px;
+                    height:35px;
+                }
+            }
         </style>
     </head>
 
     <body>
 
-        <div class="pokeball">
-
-            <div class="title">
+        <div class="pokeball" id="pokeball">
+            <div class="title" id="title">
                 <h2>POKEDEX ACCESS</h2>
                 <div class="subtitle">Centro Pokémon</div>
             </div>
 
-            <div class="center-button"></div>
+            <div class="center-button" id="centerBtn"></div>
 
-            <div class="content">
-
+            <div class="content" id="content">
                 <div class="form-area">
-
                     <form th:action="@{/login}" method="post">
-
                         <input type="email" name="correo" placeholder="Correo electrónico" required>
-
                         <input type="password" name="password" placeholder="Contraseña" required>
-
                         <button class="btn btn-login">Iniciar Sesión</button>
-
                     </form>
 
                     <a th:href="@{/registro}" style="text-decoration:none;">
                         <button class="btn btn-register">Registrarse</button>
                     </a>
-
                 </div>
             </div>
-
         </div>
+
+        <script>
+            const centerBtn = document.getElementById('centerBtn');
+            const pokeball = document.getElementById('pokeball');
+            const content = document.getElementById('content');
+            const title = document.getElementById('title');
+
+            centerBtn.addEventListener('click', () => {
+                // Girar la Pokeball
+                pokeball.classList.add('rotate');
+
+                // Esperar el giro completo
+                setTimeout(() => {
+                    // Mostrar el login
+                    content.style.display = 'flex';
+                    title.style.opacity = 1;
+
+                    // Pokeball sigue girando lentamente
+                    pokeball.style.transition = 'transform 3s linear';
+                    pokeball.style.transform = 'rotate(360deg)';
+
+                }, 1000); // coincide con la animación de spin
+            });
+        </script>
 
     </body>
 </html>
