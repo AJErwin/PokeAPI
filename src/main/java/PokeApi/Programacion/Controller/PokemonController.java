@@ -6,6 +6,7 @@ import PokeApi.Programacion.ML.Pokemon;
 import PokeApi.Programacion.ML.Usuario;
 import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
+import jakarta.mail.MessagingException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -198,21 +199,45 @@ public class PokemonController {
     public String procesarRegistro(@RequestParam String username,
             @RequestParam String correo,
             @RequestParam String password,
-            Model model) {
+            Model model) throws MessagingException {
+
+        // Validación de correo duplicado
         if (usuarioDAO.getByCorreo(correo) != null) {
-            model.addAttribute("error", "EL CORREO YA ESTA EN USO");
+            model.addAttribute("error", "EL CORREO YA ESTÁ EN USO");
             return "registro";
         }
+
+        // Encriptar contraseña
         String passwordEncriptado = passwordEncoder.encode(password);
+
+        // Guardar usuario con STATUS=0
         int resultado = usuarioDAO.guardarUsuario(username, correo, passwordEncriptado);
+
         if (resultado > 0) {
-            Usuario usuario = usuarioDAO.getByCorreo(correo);
+            Usuario usuario = usuarioDAO.getByCorreo(correo); // Obtenemos el usuario recién creado
+            // Enviar correo Pokémon con token
             emailVerificationService.createToken(usuario.getIdUsuario(), correo);
             model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
+
         } else {
             model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
         }
+
         return "registro";
+    }
+
+    @GetMapping("/verify")
+    public String verificarCuenta(@RequestParam("token") String token, Model model) {
+
+        boolean validado = emailVerificationService.validateToken(token);
+
+        if (validado) {
+            model.addAttribute("exito");
+        } else {
+            model.addAttribute("error");
+        }
+
+        return "login"; // Puedes cambiar a login.html si quieres
     }
 
     @GetMapping("/pokedex/usuarios")
@@ -277,4 +302,5 @@ public class PokemonController {
         respuesta.put("nombreReal", p.getNombre().toUpperCase());
         return respuesta;
     }
+
 }
