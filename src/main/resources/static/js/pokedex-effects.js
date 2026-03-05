@@ -3,16 +3,25 @@ let myChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('pokedexTheme');
-    if (savedTheme) {
-        setSceneTheme(savedTheme);
+    if (savedTheme) setSceneTheme(savedTheme);
+
+    const mainPkmn = document.getElementById('mainPkmn');
+    if (mainPkmn && window.location.pathname.includes('/detalle/')) {
+        const urlParts = window.location.pathname.split('/');
+        const id = urlParts[urlParts.length - 1];
+        playPokemonCry(id);
     }
 });
 
+function playPokemonCry(id) {
+    const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/${id}.ogg`);
+    cry.volume = 0.4;
+    cry.play().catch(() => console.log("Audio no disponible"));
+}
+
 function setSceneTheme(theme) {
     document.body.classList.remove('theme-night', 'theme-gameboy');
-    if (theme !== 'default') {
-        document.body.classList.add('theme-' + theme);
-    }
+    if (theme !== 'default') document.body.classList.add('theme-' + theme);
     localStorage.setItem('pokedexTheme', theme);
 }
 
@@ -39,11 +48,8 @@ function shutDownTV() {
     document.body.style.backgroundImage = "none";
     if (wrapper) wrapper.classList.add('tv-off-animation');
     setTimeout(() => {
-        if (form) {
-            form.submit();
-        } else {
-            window.location.href = "/logout";
-        }
+        if (form) form.submit();
+        else window.location.href = "/logout";
     }, 600);
 }
 
@@ -52,13 +58,10 @@ function captureAnimation(event, element) {
     const url = element.getAttribute('href');
     const parts = url.split('/');
     const id = parts[parts.length - 1];
-    
     const card = element.closest('.pokemon-card');
     const img = card ? card.querySelector('.pokemon-img') : null;
 
-    const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/${id}.ogg`);
-    cry.volume = 0.4;
-    cry.play().catch(() => console.log("Audio no disponible"));
+    playPokemonCry(id);
 
     document.body.style.backgroundColor = "#fff";
     if (img) {
@@ -81,15 +84,18 @@ function capturarEnBatalla(btn) {
     const id = btn.getAttribute('data-id');
     const nombre = btn.getAttribute('data-nombre');
     const urlImg = btn.getAttribute('data-img');
+
     if (infoPanel && infoPanel.classList.contains('expanded')) toggleDetails();
     if (ballContainer && ball) {
         ballContainer.style.display = 'block';
         ball.classList.add('throw-animation');
     }
+
     const formData = new FormData();
     formData.append('id', id);
     formData.append('nombre', nombre);
     formData.append('urlImagen', urlImg);
+
     fetch('/pokedex/guardar', {method: 'POST', body: formData})
         .then(response => response.text())
         .then(data => {
@@ -130,9 +136,6 @@ function eliminarDeFavoritos(btn) {
         .then(response => response.text())
         .then(data => {
             if (data === "OK") {
-                let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
-                captured = captured.filter(id => id !== idPokemon.toString());
-                localStorage.setItem('myCapturedPkmn', JSON.stringify(captured));
                 if (card) {
                     card.style.transition = "0.5s";
                     card.style.opacity = "0";
@@ -161,7 +164,7 @@ function switchTab(tabId) {
     const targetTab = document.getElementById(tabId);
     if (targetTab) {
         targetTab.classList.add('active-content');
-        if (event) event.target.classList.add('active');
+        if (event && event.target) event.target.classList.add('active');
         if (tabId === 'miniStats') setTimeout(initChart, 10);
     }
 }
@@ -181,7 +184,7 @@ function changeMainModel(url, isShiny) {
 
 function initChart() {
     const ctx = document.getElementById('statsChart');
-    if (!ctx) return;
+    if (!ctx || typeof statsData === 'undefined') return;
     if (myChart) myChart.destroy();
     myChart = new Chart(ctx.getContext('2d'), {
         type: 'radar',
@@ -234,7 +237,8 @@ function cargarTrivia() {
 }
 
 function validarRespuestaTrivia() {
-    const intento = document.getElementById('triviaInput').value;
+    const input = document.getElementById('triviaInput');
+    const intento = input ? input.value : "";
     if (!intento.trim()) return;
     const formData = new FormData();
     formData.append('nombreIntento', intento);
@@ -246,15 +250,13 @@ function validarRespuestaTrivia() {
             const msg = document.getElementById('triviaMsg');
             const resultDiv = document.getElementById('triviaResult');
             const formDiv = document.getElementById('triviaForm');
-            img.style.filter = "brightness(1)";
-            formDiv.style.display = 'none';
-            resultDiv.style.display = 'block';
-            if (data.success) {
-                msg.innerText = "¡CORRECTO! ES " + data.nombreReal;
-                msg.style.color = "#38b0a8";
-            } else {
-                msg.innerText = "¡OH NO! ERA " + data.nombreReal;
-                msg.style.color = "#ff1100";
+            if (img) img.style.filter = "brightness(1)";
+            if (formDiv) formDiv.style.display = 'none';
+            if (resultDiv) resultDiv.style.display = 'block';
+            if (msg) {
+                msg.innerText = data.success ? "¡CORRECTO! ES " + data.nombreReal : "¡OH NO! ERA " + data.nombreReal;
+                msg.style.color = data.success ? "#38b0a8" : "#ff1100";
+                if (data.success) playPokemonCry(idPokemonActual);
             }
         });
 }

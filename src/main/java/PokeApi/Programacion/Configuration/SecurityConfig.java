@@ -10,33 +10,30 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+ @Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/login", "/registro", "/verify", "/css/**", "/js/**", "/images/**", "/videos/**").permitAll()
+            .anyRequest().authenticated()
+        )
+        .formLogin(form -> form
+            .loginPage("/login")
+            .loginProcessingUrl("/login")
+            .usernameParameter("correo") 
+            .defaultSuccessUrl("/pokedex", true)
+            .failureUrl("/login?error=true")
+            .permitAll()
+        )
+        .logout(logout -> logout
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/login?logout")
+            .permitAll()
+        );
 
-        http
-                .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/login",
-                        "/registro",
-                        "/verify",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
-                ).permitAll()
-                .anyRequest().authenticated()
-                )
-                .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/home", true)
-                .permitAll()
-                )
-                .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")
-                .permitAll()
-                );
-
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {

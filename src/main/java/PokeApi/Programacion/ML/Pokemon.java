@@ -12,6 +12,7 @@ public class Pokemon {
     private List<Integer> estadisticas;
     private List<String> movimientos;
     private int cantidadFavoritos;
+    private String urlSonido;
 
     public int getCantidadFavoritos() {
         return cantidadFavoritos;
@@ -78,5 +79,13 @@ public class Pokemon {
 
     public void setMovimientos(List<String> movimientos) {
         this.movimientos = movimientos;
+    }
+
+    public String getUrlSonido() {
+        return urlSonido;
+    }
+
+    public void setUrlSonido(String urlSonido) {
+        this.urlSonido = urlSonido;
     }
 }
