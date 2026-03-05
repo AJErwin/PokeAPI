@@ -27,6 +27,9 @@ public class UsuarioDAO {
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
                 usuario.setRolusuario(rs.getInt("ROLUSUARIO"));
+                
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -52,6 +55,9 @@ public class UsuarioDAO {
                 usuario.setPassword(rs.getString("PASSWORD"));
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
+                
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -66,7 +72,7 @@ public class UsuarioDAO {
     }
 
     public int guardarUsuario(String username, String correo, String password) {
-        String sql = "INSERT INTO USUARIO (USERNAME, CORREO, PASSWORD, STATUS, ROLUSUARIO) VALUES (?, ?, ?, 0, 2)";
+        String sql = "INSERT INTO USUARIO (USERNAME, CORREO, PASSWORD, STATUS, ROLUSUARIO, RACHA_ACTUAL, MAX_RACHA) VALUES (?, ?, ?, 0, 2, 0, 0)";
         try {
             return jdbcTemplate.update(sql, username, correo, password);
         } catch (Exception e) {
@@ -84,6 +90,9 @@ public class UsuarioDAO {
                 usuario.setUsername(rs.getString("USERNAME"));
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
+                
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -126,6 +135,10 @@ public class UsuarioDAO {
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
                 usuario.setRolusuario(rs.getInt("ROLUSUARIO"));
+                
+                // Nuevos campos de racha
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -140,13 +153,15 @@ public class UsuarioDAO {
     }
 
     public int updateUsuario(Usuario usuario) {
-        String sql = "UPDATE USUARIO SET USERNAME = ?, CORREO = ?, STATUS = ?, ROLUSUARIO = ? WHERE IDUSUARIO = ?";
+        String sql = "UPDATE USUARIO SET USERNAME = ?, CORREO = ?, STATUS = ?, ROLUSUARIO = ?, RACHA_ACTUAL = ?, MAX_RACHA = ? WHERE IDUSUARIO = ?";
         try {
             return jdbcTemplate.update(sql,
                     usuario.getUsername(),
                     usuario.getCorreo(),
                     usuario.getStatus(),
                     usuario.getRolusuario(),
+                    usuario.getRachaActual(),
+                    usuario.getMaxRacha(),
                     usuario.getIdUsuario());
         } catch (Exception e) {
             return 0;
@@ -171,5 +186,19 @@ public class UsuarioDAO {
         }
 
         return pokemon;
+    }
+
+    public List<Usuario> getTop5Rachas() {
+        String sql = "SELECT USERNAME, MAX_RACHA FROM USUARIO WHERE MAX_RACHA > 0 ORDER BY MAX_RACHA DESC FETCH FIRST 5 ROWS ONLY";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                Usuario usuario = new Usuario();
+                usuario.setUsername(rs.getString("USERNAME"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
+                return usuario;
+            });
+        } catch (Exception e) {
+            return new java.util.ArrayList<>();
+        }
     }
 }

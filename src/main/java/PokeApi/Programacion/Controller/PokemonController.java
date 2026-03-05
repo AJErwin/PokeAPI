@@ -48,7 +48,7 @@ public class PokemonController {
 
     @GetMapping("/pokedex")
     public String mostrarPokedex(
-            @RequestParam(defaultValue = "8") int limit,
+            @RequestParam(defaultValue = "10") int limit,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String type,
@@ -96,12 +96,11 @@ public class PokemonController {
     }
 
     @GetMapping("/pokedex/detalle/{id}")
-    public String verDetalle(@PathVariable int id, Model model, Principal principal) { // Agrega Principal aquí
+    public String verDetalle(@PathVariable int id, Model model, Principal principal) {
         Pokemon pokemon = pokemonService.getById(id);
         String urlSonido = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/" + id + ".ogg";
         pokemon.setUrlSonido(urlSonido);
 
-        // NUEVA LÓGICA: Verificar favoritos para el botón de la vista de detalle
         List<Integer> idsFavoritos = new ArrayList<>();
         if (principal != null) {
             Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
@@ -115,7 +114,7 @@ public class PokemonController {
             }
         }
 
-        model.addAttribute("capturados", idsFavoritos); // Enviamos la lista
+        model.addAttribute("capturados", idsFavoritos); 
         model.addAttribute("pokemon", pokemon);
         return "detalle";
     }
@@ -227,14 +226,39 @@ public class PokemonController {
         return pokemonService.getById(idAleatorio);
     }
 
+
     @PostMapping("/pokedex/api/trivia-validar")
     @ResponseBody
-    public Map<String, Object> validarTrivia(@RequestParam String nombreIntento, @RequestParam int idPokemon) {
+    public Map<String, Object> validarTrivia(@RequestParam String nombreIntento, @RequestParam int idPokemon, Principal principal) {
         Pokemon p = pokemonService.getById(idPokemon);
         boolean esCorrecto = p.getNombre().equalsIgnoreCase(nombreIntento.trim());
+        
         Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("success", esCorrecto);
         respuesta.put("nombreReal", p.getNombre().toUpperCase());
+
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                if (esCorrecto) {
+                    usuario.setRachaActual(usuario.getRachaActual() + 1);
+                    if (usuario.getRachaActual() > usuario.getMaxRacha()) {
+                        usuario.setMaxRacha(usuario.getRachaActual());
+                    }
+                } else {
+                    usuario.setRachaActual(0);
+                }
+                
+                usuarioDAO.updateUsuario(usuario); 
+                respuesta.put("rachaActual", usuario.getRachaActual());
+            }
+        }
         return respuesta;
+    }
+
+    @GetMapping("/pokedex/api/trivia-ranking")
+    @ResponseBody
+    public List<Usuario> obtenerRankingTrivia() {
+        return usuarioDAO.getTop5Rachas(); 
     }
 }

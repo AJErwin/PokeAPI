@@ -13,7 +13,8 @@ public class Usuario {
     private int rolusuario;
     private List<Pokemon> favoritos;
     private Rol rol;
-
+private Integer rachaActual = 0;
+private Integer maxRacha = 0;
     public Usuario() {
     }
 
@@ -99,4 +100,21 @@ public class Usuario {
     public void setRol(Rol rol) {
         this.rol = rol;
     }
+
+    public Integer getRachaActual() {
+        return rachaActual;
+    }
+
+    public void setRachaActual(Integer rachaActual) {
+        this.rachaActual = rachaActual;
+    }
+
+    public Integer getMaxRacha() {
+        return maxRacha;
+    }
+
+    public void setMaxRacha(Integer maxRacha) {
+        this.maxRacha = maxRacha;
+    }
+    
 }

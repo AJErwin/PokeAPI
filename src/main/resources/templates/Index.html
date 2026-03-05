@@ -2,45 +2,248 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Pokedex GBA - Sistema de Gestión</title>
+    <title>Safari Zone GBA - Sistema de Gestión</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/pokedex-style.css?v=21}">
     <script th:src="@{/js/pokedex-effects.js?v=21}" defer></script>
     <style>
+        :root {
+            --dark-border: #1a2b1c; 
+            --safari-tree: #489048;
+            --safari-path: #d8b878;
+            --menu-bg: #f8f8d8;
+            --wood-dark: #583818;
+            --wood-light: #c89858;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            font-size: 9px;
+            margin: 0;
+            padding: 0;
+            
+            /* FONDO AL 100% */
+            background-image: url('/img/Fondo.jpg'); 
+            background-size: 100%; 
+            background-position: top center;
+            background-attachment: fixed;
+            background-repeat: repeat; 
+            
+            background-color: #70c850; 
+            color: var(--dark-border);
+            image-rendering: pixelated;
+        }
+
+        /* Intro y TV apagada con fondo negro puro */
         #intro-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #000;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #000 !important; 
             z-index: 10000;
             display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            cursor: pointer;
-            overflow: hidden;
+            justify-content: center; align-items: center;
         }
+
         #intro-video {
             width: 100%;
             height: 100%;
             object-fit: contain;
             pointer-events: none;
         }
-        .fade-out {
-            animation: fadeOutEffect 1.2s forwards;
+
+        /* Contenedor principal */
+        #pokedexWrapper {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            margin-top: 30px;
         }
-        @keyframes fadeOutEffect {
-            from { opacity: 1; }
-            to { opacity: 0; visibility: hidden; }
+
+        /* HEADER: ESTILO CARTEL DE MADERA */
+        .header-container {
+            background-color: var(--wood-light);
+            border: 4px solid var(--wood-dark);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.4);
+            position: relative;
         }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+
+        .header-container h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            color: #fff;
+            text-shadow: 2px 2px 0 var(--wood-dark);
+            margin: 0;
+            text-align: center;
         }
+
+        .btn-retro {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            color: var(--dark-border);
+            background-color: #fff;
+            border: 3px solid var(--dark-border);
+            padding: 8px 12px;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .btn-retro:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0; }
+
+        /* FILTROS */
+        .filter-bar {
+            background-color: rgba(216, 184, 120, 0.95); 
+            border: 4px solid var(--wood-dark);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+            color: var(--wood-dark);
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            border: 3px solid var(--dark-border);
+            border-radius: 0;
+            padding: 8px;
+        }
+
+        /* CARTAS */
+        .pokemon-card {
+            background: none; 
+            border: none;
+            text-align: center;
+            height: 100%;
+            display: flex; flex-direction: column;
+            position: relative;
+            padding: 10px;
+        }
+        
+        .pokemon-card::before {
+            content: '';
+            position: absolute;
+            bottom: 45px; left: 5px; right: 5px; top: 5px;
+            background-color: #388e3c; 
+            background-image: repeating-linear-gradient(rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 4px);
+            border: 3px solid #1b5e20;
+            border-radius: 8px;
+            z-index: 1;
+        }
+
+        .pokemon-img-container {
+            background: transparent;
+            position: relative;
+            z-index: 2;
+            aspect-ratio: 1 / 1;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .pokemon-card img.pokemon-img {
+            image-rendering: pixelated;
+            width: 110px; 
+            height: 110px;
+            object-fit: contain;
+            filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.3));
+        }
+
+        .card-body-integrated {
+            background: var(--menu-bg);
+            border: 3px solid var(--dark-border);
+            border-radius: 4px;
+            padding: 6px;
+            position: relative;
+            z-index: 3;
+            margin-top: -10px;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+        }
+
+        /* PAGINACIÓN */
+        .pagination-container {
+            background: var(--wood-dark);
+            border: 4px solid #000;
+            padding: 15px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: 4px;
+        }
+
+        /* MODAL MAPA */
+        #modalMapa > div {
+            background: #f8f8d8;
+            border: 6px solid var(--wood-dark);
+            padding: 10px;
+            text-align: center;
+            width: 95%;
+            max-width: 700px;
+            position: relative;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* MODAL TRIVIA */
+        #modalTrivia > div {
+            background-color: var(--menu-bg);
+            border: 6px solid var(--dark-border);
+            border-radius: 8px;
+            padding: 25px;
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
+            overflow: hidden; /* Necesario para la marquesina */
+        }
+        
+        .trivia-img-box {
+            width: 220px; height: 220px;
+            background: #fff;
+            margin: 20px auto;
+            display: flex; align-items: center; justify-content: center;
+            border: 4px solid var(--dark-border);
+            border-radius: 8px;
+        }
+        
+        #triviaImg { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+
+        /* --- MARQUESINA RANKING TRIVIA --- */
+        .trivia-marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            background: #111;
+            color: #f8d030;
+            padding: 8px 0;
+            border: 4px solid var(--dark-border);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .trivia-marquee-content {
+            display: inline-block;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+            animation: scroll-trivia 15s linear infinite;
+        }
+        .trivia-marquee-content span { margin-right: 40px; }
+        @keyframes scroll-trivia {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .tv-off-animation { animation: tv-off 0.6s ease-out forwards; }
+        @keyframes tv-off { 0% { transform: scaleY(1); } 50% { transform: scaleY(0.01) scaleX(1); } 100% { transform: scaleY(0) scaleX(0); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -49,122 +252,102 @@
         <video id="intro-video" autoplay muted playsinline preload="auto">
             <source src="/videos/intro.mp4" type="video/mp4">
         </video>
-        <div style="position: absolute; bottom: 10%; color: white; font-family: 'Press Start 2P'; font-size: 12px; animation: blink 1s infinite; z-index: 10001; text-shadow: 2px 2px #000;">
-            PRESIONA PARA EMPEZAR
+        <div style="position: absolute; bottom: 10%; color: #fff; font-family: 'Press Start 2P'; font-size: 10px; animation: blink 1s infinite; z-index: 10001; text-shadow: 2px 2px 0 #000;">
+            PRESIONA PARA ENTRAR A LA ZONA SAFARI
         </div>
     </div>
 
-    <div class="container pokedex-container" id="pokedexWrapper">
-        <div class="header-container d-flex justify-content-between align-items-center">
-            <h1>POKEDEX SYSTEM</h1>
+    <div class="container" id="pokedexWrapper">
+        
+        <div class="header-container d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h1 style="white-space: nowrap;">SAFARI ZONE</h1>
             <div class="d-flex gap-2">
-                <button onclick="cargarTrivia()" class="btn-retro" style="background-color: #f8d030; color: #000; padding: 10px; width: auto; border-color: #000;">
-                    TRIVIA
-                </button>
-
-                <a th:if="${esAdmin}" th:href="@{/pokedex/usuarios}" class="btn-retro" style="background-color: #38b0a8; text-decoration: none; padding: 10px; width: auto; display: flex; align-items: center;">
-                    USUARIOS
-                </a>
-
-                <a th:href="${esAdmin ? '/pokedex/ranking' : '/pokedex/perfil'}" class="btn-retro" style="background-color: #38b0a8; text-decoration: none; padding: 10px; width: auto; display: flex; align-items: center;" th:text="${esAdmin ? 'RANKING' : 'FAVORITOS'}">
-                </a>
-
-                <div class="logout-container">
-                    <form th:action="@{/logout}" method="post" id="logoutForm">
-                        <button type="button" class="btn-salir" onclick="shutDownTV()">SALIR</button>
-                    </form>
-                </div>
+                <button onclick="cargarTrivia()" class="btn-retro" style="background-color: #f8d030; color: #000; text-shadow: none;">TRIVIA</button>
+                <a th:if="${esAdmin}" th:href="@{/pokedex/usuarios}" class="btn-retro" style="background-color: #58a848; color: #fff;">USUARIOS</a>
+                <a th:href="${esAdmin ? '/pokedex/ranking' : '/pokedex/perfil'}" class="btn-retro" style="background-color: #58a848; color: #fff;" th:text="${esAdmin ? 'RANKING' : 'FAVORITOS'}"></a>
+                <form th:action="@{/logout}" method="post" id="logoutForm" class="m-0 p-0">
+                    <button type="button" class="btn-retro" style="background-color: #e84830; color: white;" onclick="shutDownTV()">SALIR</button>
+                </form>
             </div>
         </div>
 
         <div class="filter-bar">
             <form th:action="@{/pokedex}" method="get" id="combinedFilterForm">
-                <div class="row g-2">
+                <div class="row g-2 align-items-end">
                     <div class="col-md-3">
-                        <div class="filter-section" style="background: #ddd;">
-                            <span class="section-title">NOMBRE</span>
-                            <div class="d-flex flex-column gap-2">
-                                <input type="text" name="nombre" class="form-control" placeholder="NOMBRE..." th:value="${nombreFiltro}"/>
-                                <button type="submit" class="btn-retro">OK</button>
-                            </div>
-                        </div>
+                        <span class="section-title">NOMBRE</span>
+                        <input type="text" name="nombre" class="form-control" th:value="${nombreFiltro}" placeholder="BUSCAR..."/>
                     </div>
-
                     <div class="col-md-5">
-                        <div id="region-bg" class="filter-section bg-kanto">
-                            <span class="section-title">REGIÓN Y TIPO</span>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <select name="type" class="form-select">
-                                        <option value="all">TIPO</option>
-                                        <option value="fire" th:selected="${tipoFiltro == 'fire'}">🔥 FUEGO</option>
-                                        <option value="water" th:selected="${tipoFiltro == 'water'}">💧 AGUA</option>
-                                        <option value="grass" th:selected="${tipoFiltro == 'grass'}">🌿 PLANTA</option>
-                                        <option value="electric" th:selected="${tipoFiltro == 'electric'}">⚡ ELÉC</option>
-                                        <option value="ice" th:selected="${tipoFiltro == 'ice'}">❄️ HIELO</option>
-                                        <option value="fighting" th:selected="${tipoFiltro == 'fighting'}">👊 LUCHA</option>
-                                        <option value="poison" th:selected="${tipoFiltro == 'poison'}">☠️ VEN</option>
-                                        <option value="ground" th:selected="${tipoFiltro == 'ground'}">⛰️ TIERRA</option>
-                                        <option value="flying" th:selected="${tipoFiltro == 'flying'}">🦅 VOLAD</option>
-                                        <option value="psychic" th:selected="${tipoFiltro == 'psychic'}">🧠 PSIC</option>
-                                        <option value="bug" th:selected="${tipoFiltro == 'bug'}">🐛 BICHO</option>
-                                        <option value="rock" th:selected="${tipoFiltro == 'rock'}">🧱 ROCA</option>
-                                        <option value="ghost" th:selected="${tipoFiltro == 'ghost'}">👻 FANT</option>
-                                        <option value="dragon" th:selected="${tipoFiltro == 'dragon'}">🐲 DRAG</option>
-                                        <option value="dark" th:selected="${tipoFiltro == 'dark'}">🌑 SINIE</option>
-                                        <option value="steel" th:selected="${tipoFiltro == 'steel'}">⚙️ ACER</option>
-                                        <option value="fairy" th:selected="${tipoFiltro == 'fairy'}">✨ HADA</option>
-                                    </select>
-                                </div>
-                                <div class="col-6">
-                                    <select name="region" id="region-select" class="form-select" onchange="updateBg()">
-                                        <option value="all">REGIÓN</option>
-                                        <option value="kanto" th:selected="${regionFiltro == 'kanto'}">KANTO</option>
-                                        <option value="johto" th:selected="${regionFiltro == 'johto'}">JOHTO</option>
-                                        <option value="hoenn" th:selected="${regionFiltro == 'hoenn'}">HOENN</option>
-                                        <option value="sinnoh" th:selected="${regionFiltro == 'sinnoh'}">SINNOH</option>
-                                        <option value="unova" th:selected="${regionFiltro == 'unova'}">UNOVA</option>
-                                        <option value="kalos" th:selected="${regionFiltro == 'kalos'}">KALOS</option>
-                                        <option value="alola" th:selected="${regionFiltro == 'alola'}">ALOLA</option>
-                                        <option value="galar" th:selected="${regionFiltro == 'galar'}">GALAR</option>
-                                        <option value="paldea" th:selected="${regionFiltro == 'paldea'}">PALDEA</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <button type="submit" class="btn-retro">FILTRAR</button>
-                                </div>
-                            </div>
+                        <span class="section-title">HÁBITAT Y TIPO</span>
+                        <div class="d-flex gap-1">
+                            <select name="type" class="form-select">
+                                <option value="all">TIPO</option>
+                                <option value="fire" th:selected="${tipoFiltro == 'fire'}">FUEGO</option>
+                                <option value="water" th:selected="${tipoFiltro == 'water'}">AGUA</option>
+                                <option value="grass" th:selected="${tipoFiltro == 'grass'}">PLANTA</option>
+                                <option value="electric" th:selected="${tipoFiltro == 'electric'}">ELÉCTRICO</option>
+                                <option value="ice" th:selected="${tipoFiltro == 'ice'}">HIELO</option>
+                                <option value="fighting" th:selected="${tipoFiltro == 'fighting'}">LUCHA</option>
+                                <option value="poison" th:selected="${tipoFiltro == 'poison'}">VENENO</option>
+                                <option value="ground" th:selected="${tipoFiltro == 'ground'}">TIERRA</option>
+                                <option value="flying" th:selected="${tipoFiltro == 'flying'}">VOLADOR</option>
+                                <option value="psychic" th:selected="${tipoFiltro == 'psychic'}">PSIQUICO</option>
+                                <option value="bug" th:selected="${tipoFiltro == 'bug'}">BICHO</option>
+                                <option value="rock" th:selected="${tipoFiltro == 'rock'}">ROCA</option>
+                                <option value="ghost" th:selected="${tipoFiltro == 'ghost'}">FANTASMA</option>
+                                <option value="dragon" th:selected="${tipoFiltro == 'dragon'}">DRAGON</option>
+                                <option value="dark" th:selected="${tipoFiltro == 'dark'}">SINIESTRO</option>
+                                <option value="steel" th:selected="${tipoFiltro == 'steel'}">ACERO</option>
+                                <option value="fairy" th:selected="${tipoFiltro == 'fairy'}">HADA</option>
+                            </select>
+                            
+                            <select name="region" id="regionSelector" class="form-select">
+                                <option value="all">REGIÓN</option>
+                                <option value="kanto" th:selected="${regionFiltro == 'kanto'}">KANTO</option>
+                                <option value="johto" th:selected="${regionFiltro == 'johto'}">JOHTO</option>
+                                <option value="hoenn" th:selected="${regionFiltro == 'hoenn'}">HOENN</option>
+                                <option value="sinnoh" th:selected="${regionFiltro == 'sinnoh'}">SINNOH</option>
+                                <option value="unova" th:selected="${regionFiltro == 'unova'}">UNOVA</option>
+                                <option value="kalos" th:selected="${regionFiltro == 'kalos'}">KALOS</option>
+                                <option value="alola" th:selected="${regionFiltro == 'alola'}">ALOLA</option>
+                                <option value="galar" th:selected="${regionFiltro == 'galar'}">GALAR</option>
+                                <option value="paldea" th:selected="${regionFiltro == 'paldea'}">PALDEA</option>
+                            </select>
+
+                            <button type="submit" class="btn-retro">OK</button>
+                            
+                            <button type="button" class="btn-retro" onclick="abrirMapaRegion()" style="background-color: #38b0a8; color: #fff;">Mapa️</button>
                         </div>
                     </div>
-
-                    <div class="col-md-4">
-                        <div class="filter-section bg-dual">
-                            <span class="section-title">LIMPIAR</span>
-                            <div class="d-flex flex-column gap-2">
-                                <p style="font-size: 8px; color: #333; margin: 0;">QUITAR FILTROS:</p>
-                                <a th:href="@{/pokedex}" class="btn-retro" style="background:#585858; text-decoration:none; text-align:center;">X</a>
-                            </div>
-                        </div>
+                    <div class="col-md-4 text-center">
+                        <span class="section-title">SISTEMA</span>
+                        <a th:href="@{/pokedex}" class="btn-retro w-100" style="background:#fff; color:#000; text-shadow:none;">LIMPIAR</a>
                     </div>
                 </div>
             </form>
         </div>
 
-        <div class="row row-cols-2 row-cols-md-4 g-3">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
             <div class="col" th:each="pokemon : ${pokemones}">
                 <div class="pokemon-card">
                     <div class="pokemon-img-container">
-                        <div class="evo-bg">
-                            <img th:if="${pokemon.id > 1}" th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id - 1} + '.png'" class="evo-img">
-                            <img th:src="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + ${pokemon.id + 1} + '.png'" class="evo-img">
-                        </div>
-                        <img th:src="${pokemon.urlImagen}" class="pokemon-img" style="height: 80px; image-rendering: pixelated; position: relative; z-index: 2;">
+                        <img th:src="${pokemon.urlImagen}" class="pokemon-img">
                     </div>
-                    <div style="font-size: 8px; text-transform: uppercase; margin-bottom: 10px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre}"></div>
-                    <div class="d-flex gap-1">
-                        <a th:href="@{/pokedex/detalle/{id}(id=${pokemon.id})}" class="btn btn-retro mt-2" onclick="captureAnimation(event, this)" style="text-decoration: none; line-height: 1.5; background-color: #4CAF50;">VER</a>
-                        <div style="flex-grow: 1;">
-                            <button type="button" class="btn btn-retro mt-2 btn-capture-index" th:data-id="${pokemon.id}" th:data-nombre="${pokemon.nombre}" th:data-img="${pokemon.urlImagen}" th:text="${capturados != null and #lists.contains(capturados, pokemon.id) ? 'ATRAPADO' : 'FAVORITO'}" th:disabled="${capturados != null and #lists.contains(capturados, pokemon.id)}" th:style="${capturados != null and #lists.contains(capturados, pokemon.id) ? 'background-color: #585858; box-shadow: none; transform: none;' : ''}" onclick="quickCapture(this)"></button>
+                    <div class="card-body-integrated">
+                        <div style="font-family: 'Press Start 2P'; font-size: 7px; margin-bottom: 8px;" th:text="'#' + ${pokemon.id} + ' ' + ${pokemon.nombre.toUpperCase()}"></div>
+                        <div class="d-flex gap-1">
+                            <a th:href="@{/pokedex/detalle/{id}(id=${pokemon.id})}" class="btn-retro w-100" onclick="captureAnimation(event, this)" style="background:#fff; color:#000; text-shadow:none; padding:5px; font-size:7px;">VER</a>
+                            
+                            <button type="button" class="btn-retro w-100" 
+                                    th:style="${capturados != null and #lists.contains(capturados, pokemon.id)} ? 'background-color: #a0a0a0; color: #505050; pointer-events: none; padding:5px; font-size:7px;' : 'background-color:#70c850; color:#fff; padding:5px; font-size:7px;'"
+                                    th:data-id="${pokemon.id}" 
+                                    th:data-nombre="${pokemon.nombre}" 
+                                    th:data-img="${pokemon.urlImagen}" 
+                                    th:text="${capturados != null and #lists.contains(capturados, pokemon.id)} ? 'ATRAPADO' : 'CAPTURAR'" 
+                                    th:disabled="${capturados != null and #lists.contains(capturados, pokemon.id)}" 
+                                    onclick="quickCapture(this)">
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -172,170 +355,253 @@
         </div>
 
         <div class="pagination-container" th:if="${limit != null}">
-            <a th:if="${currentOffset > 0}" th:href="@{/pokedex(limit=${limit}, offset=${currentOffset - limit}, nombre=${nombreFiltro}, type=${tipoFiltro}, region=${regionFiltro})}" class="btn-retro" style="width: auto; padding: 5px 15px;"> < ANT </a>
-            <span style="font-size: 8px;" th:text="'PAG: ' + (${currentOffset / limit} + 1)"></span>
-            <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit}, nombre=${nombreFiltro}, type=${tipoFiltro}, region=${regionFiltro})}" class="btn-retro" style="width: auto; padding: 10px 20px;"> SIG > </a>
+            <a th:if="${currentOffset > 0}" th:href="@{/pokedex(limit=${limit}, offset=${currentOffset - limit}, nombre=${nombreFiltro}, type=${tipoFiltro}, region=${regionFiltro})}" class="btn-retro"> &lt; ANTERIOR </a>
+            <div th:unless="${currentOffset > 0}"></div> 
+            <span style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff;" th:text="'ZONA ' + (${currentOffset / limit} + 1)"></span>
+            <a th:href="@{/pokedex(limit=${limit}, offset=${currentOffset + limit}, nombre=${nombreFiltro}, type=${tipoFiltro}, region=${regionFiltro})}" class="btn-retro"> SIGUIENTE &gt; </a>
+        </div>
+
+    </div>
+
+    <div id="modalMapa" style="display:none; position:fixed; z-index:12000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8); align-items:center; justify-content:center;">
+        <div>
+            <h2 id="tituloMapa" style="font-family: 'Press Start 2P'; font-size: 14px; background: var(--wood-light); color: white; padding: 10px; margin: 0 0 10px 0; border: 2px solid var(--wood-dark); text-transform: uppercase;">MAPA</h2>
+            
+            <div style="background: #a8c0b8; border: 4px solid var(--dark-border); padding: 5px; height: 400px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <img id="imagenMapa" src="" style="width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.2));">
+            </div>
+
+            <button onclick="document.getElementById('modalMapa').style.display='none'" class="btn-retro" style="background: #e84830; color: white; margin-top: 15px; width: 100%;">CERRAR MAPA</button>
         </div>
     </div>
 
     <div id="modalTrivia" style="display:none; position:fixed; z-index:11000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items:center; justify-content:center;">
-        <div class="pokedex-container" style="max-width:350px; text-align:center; border:6px solid #585858; background: #f8f8f8;">
-            <h1 style="font-size:10px; margin-bottom:15px; background: #ff1100; color: white; padding: 5px;">¿QUIÉN ES ESE POKÉMON?</h1>
-            <div class="pokemon-img-container" style="background:#d0f0f8; margin-bottom:15px; height:180px; display: flex; align-items: center; justify-content: center;">
-                <img id="triviaImg" src="" style="width:160px; height:160px; filter:brightness(0); transition:filter 0.5s ease-in-out; image-rendering:pixelated;">
+        <div>
+            <div class="trivia-marquee-container">
+                <div class="trivia-marquee-content" id="triviaRankingContent">
+                    CARGANDO TOP 5 RACHAS...
+                </div>
+            </div>
+
+            <h1 style="font-family:'Press Start 2P'; font-size:16px; background:var(--safari-tree); color:white; padding:15px; border-radius:4px; text-shadow:2px 2px 0 #000;">ENCUENTRO SALVAJE</h1>
+            <div class="trivia-img-box">
+                <img id="triviaImg" src="" style="width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; filter:brightness(0); transition: filter 0.5s;">
             </div>
             <div id="triviaForm">
-                <input type="text" id="triviaInput" placeholder="NOMBRE..." style="width:90%; padding:10px; font-family:'Press Start 2P'; font-size:8px; text-align:center; border:3px solid #585858; margin-bottom:10px; text-transform:uppercase;">
-                <button onclick="validarRespuestaTrivia()" class="btn-retro" style="width:90%; padding:10px;">ADIVINAR</button>
+                <input type="text" id="triviaInput" placeholder="NOMBRE..." style="width:90%; padding:15px; font-family:'Press Start 2P'; font-size:14px; text-align:center; text-transform:uppercase; border:4px solid var(--dark-border);">
+                <button id="btnAdivinarTrivia" onclick="validarRespuestaTrivia()" class="btn-retro mt-3 w-90" style="background:#f8d030; font-size:14px; padding:15px;">ADIVINAR</button>
             </div>
             <div id="triviaResult" style="display:none; padding:10px;">
-                <p id="triviaMsg" style="font-size:10px; margin-bottom:15px;"></p>
-                <button onclick="cargarTrivia()" class="btn-retro" style="background:#4CAF50; width:90%; margin-bottom: 10px;">OTRO POKÉMON</button>
+                <p id="triviaMsg" style="font-family:'Press Start 2P'; font-size:14px; line-height: 1.5; margin-bottom:15px;"></p>
+                <button onclick="cargarTrivia()" class="btn-retro w-90" style="background:#489048; color:white; font-size:14px; padding:15px;">OTRO POKÉMON</button>
             </div>
-            <hr style="border: 2px solid #585858; margin: 10px 20px;">
-            <button onclick="cerrarTrivia()" class="btn-retro" style="background:#585858; width:80%; margin-bottom: 15px; font-size: 8px;">SALIR DE TRIVIA</button>
+            <hr style="border: 2px solid #000; margin: 20px 0;">
+            <button onclick="cerrarTrivia()" class="btn-retro" style="background:#e84830; color:white; padding:10px;">HUIR</button>
         </div>
     </div>
 
-    <div id="namingScreenIndex" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
-        <div style="background: #f8f8f8; border: 6px solid #585858; padding: 30px; text-align: center; box-shadow: 8px 8px 0 #000; width: 80%; max-width: 450px;">
-            <p id="namingQuestionIndex" style="font-family: 'Press Start 2P'; font-size: 14px; line-height: 1.8; color: #333; margin-bottom: 25px;"></p>
-            <input type="text" id="nicknameInputIndex" maxlength="12" style="font-family: 'Press Start 2P'; font-size: 18px; padding: 15px; border: 4px solid #585858; width: 80%; text-align: center; text-transform: uppercase; margin-bottom: 25px; outline: none;">
+    <div id="namingScreenIndex" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="background: var(--menu-bg); border: 6px solid #000; padding: 30px; text-align: center; border-radius:8px;">
+            <p id="namingQuestionIndex" style="font-family: 'Press Start 2P'; font-size: 12px; line-height: 1.8; color: #000; margin-bottom: 25px;"></p>
+            <input type="text" id="nicknameInputIndex" maxlength="12" style="font-family: 'Press Start 2P'; font-size: 16px; padding: 15px; text-align: center; text-transform: uppercase; border:4px solid #000;">
             <br>
-            <button id="btnSaveNicknameIndex" class="btn-retro" style="font-size: 14px; padding: 15px 30px; width: auto;">ACEPTAR</button>
+            <button id="btnSaveNicknameIndex" class="btn-retro mt-4" style="background-color: #489048; color: white; padding:15px;">ACEPTAR</button>
         </div>
     </div>
 
-    <script>
+    <script th:inline="javascript">
         let idPokemonActual = 0;
+        
+        // DICCIONARIO DE MAPAS
+        const mapasRegiones = {
+            'kanto': '/img/kanto.jpg',
+            'johto': '/img/johto.jpg',
+            'hoenn': '/img/hoenn.jpg',
+            'sinnoh': '/img/sinnoh.jpg',
+            'unova': '/img/unova.jpg',
+            'kalos': '/img/kalos.jpg',
+            'alola': '/img/alola.jpg',
+            'galar': '/img/galar.jpg',
+            'paldea': '/img/paldea.jpg'
+        };
+
+        function abrirMapaRegion() {
+            const selector = document.getElementById('regionSelector');
+            const regionSeleccionada = selector.value;
+            const modal = document.getElementById('modalMapa');
+            const img = document.getElementById('imagenMapa');
+            const titulo = document.getElementById('tituloMapa');
+
+            if (regionSeleccionada === 'all') {
+                alert("¡Elige una región específica para ver su mapa!");
+                return;
+            }
+
+            const urlMapa = mapasRegiones[regionSeleccionada];
+            img.src = urlMapa ? urlMapa : '/img/kanto.jpg'; 
+            titulo.innerText = 'MAPA DE ' + regionSeleccionada.toUpperCase();
+
+            modal.style.display = 'flex';
+        }
+
         function shutDownTV() {
             const wrapper = document.getElementById('pokedexWrapper');
             const form = document.getElementById('logoutForm');
-            document.body.style.backgroundColor = "#000";
             document.body.style.backgroundImage = "none";
+            document.body.style.backgroundColor = "#000";
             if (wrapper) wrapper.classList.add('tv-off-animation');
             setTimeout(() => {
                 sessionStorage.removeItem('introPlayed');
                 if (form) form.submit();
             }, 600);
         }
-        function captureAnimation(event, element) {
-            event.preventDefault();
-            const url = element.getAttribute('href');
-            const card = element.closest('.pokemon-card');
-            const img = card ? card.querySelector('.pokemon-img') : null;
-            const parts = url.split('/');
-            const id = parts[parts.length - 1];
-            const audio = new Audio(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/${id}.ogg`);
-            audio.volume = 0.5;
-            audio.play().catch(() => console.log("Sonido no disponible"));
-            document.body.style.backgroundColor = "#fff";
-            if (img) {
-                img.style.transition = "all 0.5s ease-in";
-                img.style.transform = "scale(0.1) rotate(360deg)";
-                img.style.filter = "brightness(5) sepia(1) hue-rotate(100deg)";
-                img.style.opacity = "0";
-            }
-            setTimeout(() => { window.location.href = url; }, 500);
-        }
-        function cargarTrivia() {
-            fetch('/pokedex/api/trivia-dia')
-                .then(res => res.json())
-                .then(pokemon => {
-                    if (pokemon && pokemon.urlImagen) {
-                        idPokemonActual = pokemon.id;
-                        const img = document.getElementById('triviaImg');
-                        const formDiv = document.getElementById('triviaForm');
-                        const resultDiv = document.getElementById('triviaResult');
-                        const input = document.getElementById('triviaInput');
-                        img.src = pokemon.urlImagen;
-                        img.style.filter = "brightness(0)";
-                        formDiv.style.display = 'block';
-                        resultDiv.style.display = 'none';
-                        input.value = "";
-                        document.getElementById('modalTrivia').style.display = 'flex';
-                    }
-                })
-                .catch(err => console.error("Error al cargar trivia:", err));
-        }
-        function validarRespuestaTrivia() {
-            const intento = document.getElementById('triviaInput').value;
-            if (!intento.trim()) return;
-            const formData = new FormData();
-            formData.append('nombreIntento', intento);
-            formData.append('idPokemon', idPokemonActual);
-            fetch('/pokedex/api/trivia-validar', {method: 'POST', body: formData})
-                .then(res => res.json())
-                .then(data => {
-                    const img = document.getElementById('triviaImg');
-                    const msg = document.getElementById('triviaMsg');
-                    const resultDiv = document.getElementById('triviaResult');
-                    const formDiv = document.getElementById('triviaForm');
-                    img.style.filter = "brightness(1)";
-                    formDiv.style.display = 'none';
-                    resultDiv.style.display = 'block';
-                    if (data.success) {
-                        msg.innerText = "¡CORRECTO! ES " + data.nombreReal;
-                        msg.style.color = "#38b0a8";
-                    } else {
-                        msg.innerText = "¡OH NO! ERA " + data.nombreReal;
-                        msg.style.color = "#ff1100";
-                    }
-                });
-        }
-        function cerrarTrivia() {
-            document.getElementById('modalTrivia').style.display = 'none';
-        }
+
         function startApp() {
             const container = document.getElementById('intro-container');
             const video = document.getElementById('intro-video');
-            if (video) {
-                video.muted = false;
-                video.volume = 0.8;
-            }
+            if (video) { video.muted = false; video.volume = 0.8; }
             container.classList.add('fade-out');
             sessionStorage.setItem('introPlayed', 'true');
-            setTimeout(() => {
-                container.style.display = 'none';
-                if (video) video.pause();
-            }, 1200);
+            setTimeout(() => { container.style.display = 'none'; if (video) video.pause(); }, 1200);
         }
+
         function quickCapture(btn) {
             const id = btn.getAttribute('data-id');
             const nombreOriginal = btn.getAttribute('data-nombre');
             const urlImg = btn.getAttribute('data-img');
             const namingScreen = document.getElementById('namingScreenIndex');
-            const namingQuestion = document.getElementById('namingQuestionIndex');
-            const nicknameInput = document.getElementById('nicknameInputIndex');
-            const btnSaveNickname = document.getElementById('btnSaveNicknameIndex');
-            namingQuestion.innerText = `¡Atrapaste a ${nombreOriginal.toUpperCase()}!\n\n¿Quieres darle un apodo?`;
-            nicknameInput.value = nombreOriginal.toUpperCase();
+            
+            if (btn.disabled || btn.innerText === "ATRAPADO") return;
+
+            document.getElementById('namingQuestionIndex').innerText = `¡Atrapaste a ${nombreOriginal.toUpperCase()}!\n\n¿Quieres darle un apodo?`;
+            document.getElementById('nicknameInputIndex').value = nombreOriginal.toUpperCase();
             namingScreen.style.display = 'flex';
-            nicknameInput.focus();
-            btnSaveNickname.onclick = function () {
-                let apodo = nicknameInput.value.trim();
-                if (apodo === "") apodo = nombreOriginal.toUpperCase();
+            document.getElementById('nicknameInputIndex').focus();
+            
+            // Clonamos el botón para evitar listeners duplicados
+            const btnSave = document.getElementById('btnSaveNicknameIndex');
+            const newBtnSave = btnSave.cloneNode(true);
+            btnSave.parentNode.replaceChild(newBtnSave, btnSave);
+
+            newBtnSave.onclick = function () {
+                let apodo = document.getElementById('nicknameInputIndex').value.trim() || nombreOriginal.toUpperCase();
                 namingScreen.style.display = 'none';
                 const formData = new FormData();
-                formData.append('id', id);
-                formData.append('nombre', apodo);
-                formData.append('urlImagen', urlImg);
+                formData.append('id', id); formData.append('nombre', apodo); formData.append('urlImagen', urlImg);
+                
                 fetch('/pokedex/guardar', {method: 'POST', body: formData})
                     .then(response => response.text())
                     .then(data => {
                         if (data === "OK") {
                             btn.innerText = "ATRAPADO";
                             btn.disabled = true;
-                            btn.style.backgroundColor = "#585858";
+                            btn.style.backgroundColor = "#a0a0a0"; 
+                            btn.style.color = "#505050";
                             btn.style.boxShadow = "none";
-                            btn.style.transform = "none";
+                            btn.style.cursor = "default";
+                            btn.style.pointerEvents = "none";
                         } else {
-                            alert("Error: " + data);
+                            alert("Error al guardar: " + data);
                         }
-                    })
-                    .catch(err => console.error(err));
+                    });
             };
         }
+
+        function captureAnimation(event, element) {
+            event.preventDefault();
+            const url = element.getAttribute('href');
+            document.body.style.backgroundColor = "#fff";
+            setTimeout(() => { window.location.href = url; }, 300);
+        }
+
+        function actualizarRankingTrivia() {
+            fetch('/pokedex/api/trivia-ranking')
+                .then(res => res.json())
+                .then(ranking => {
+                    const content = document.getElementById('triviaRankingContent');
+                    if (ranking && ranking.length > 0) {
+                        let htmlStr = '';
+                        ranking.forEach((user, index) => {
+                            htmlStr += `<span>#${index + 1} ${user.username} (🔥${user.maxRacha})</span>`;
+                        });
+                        content.innerHTML = htmlStr + htmlStr; // Duplicado para scroll continuo
+                    } else {
+                        content.innerHTML = "<span>SÉ EL PRIMERO EN CREAR UNA RACHA 🔥</span>";
+                    }
+                })
+                .catch(e => console.error("Error cargando ranking", e));
+        }
+
+        function cargarTrivia() {
+            actualizarRankingTrivia();
+
+            fetch('/pokedex/api/trivia-dia').then(res => res.json()).then(pokemon => {
+                if (pokemon && pokemon.urlImagen) {
+                    idPokemonActual = pokemon.id;
+                    
+                    document.getElementById('triviaInput').value = ""; 
+                    document.getElementById('triviaMsg').innerText = ""; 
+                    
+                    const btnAdivinar = document.getElementById('btnAdivinarTrivia');
+                    if (btnAdivinar) {
+                        btnAdivinar.disabled = false;
+                        btnAdivinar.style.opacity = '1';
+                    }
+
+                    document.getElementById('triviaImg').src = pokemon.urlImagen;
+                    document.getElementById('triviaImg').style.filter = "brightness(0)";
+                    document.getElementById('triviaForm').style.display = 'block';
+                    document.getElementById('triviaResult').style.display = 'none';
+                    document.getElementById('modalTrivia').style.display = 'flex';
+                    setTimeout(() => document.getElementById('triviaInput').focus(), 100);
+                }
+            });
+        }
+
+        function validarRespuestaTrivia() {
+            const intento = document.getElementById('triviaInput').value;
+            if (!intento.trim()) return;
+
+            const btnAdivinar = document.getElementById('btnAdivinarTrivia');
+            if (btnAdivinar) {
+                btnAdivinar.disabled = true;
+                btnAdivinar.style.opacity = '0.5';
+            }
+
+            const formData = new FormData();
+            formData.append('nombreIntento', intento); 
+            formData.append('idPokemon', idPokemonActual);
+            
+            fetch('/pokedex/api/trivia-validar', {method: 'POST', body: formData})
+                .then(res => res.json())
+                .then(data => {
+                    const img = document.getElementById('triviaImg');
+                    img.style.filter = "brightness(1)";
+                    document.getElementById('triviaForm').style.display = 'none';
+                    document.getElementById('triviaResult').style.display = 'block';
+                    
+                    const msg = document.getElementById('triviaMsg');
+                    
+                    if(data.success) {
+                        let rachaTxt = data.rachaActual !== undefined ? `\n🔥 RACHA ACTUAL: ${data.rachaActual}` : '';
+                        msg.innerText = `¡CORRECTO! ES ${data.nombreReal.toUpperCase()}${rachaTxt}`;
+                        msg.style.color = "#489048";
+                    } else {
+                        msg.innerText = `¡HUYÓ! ERA ${data.nombreReal.toUpperCase()}\n💔 RACHA PERDIDA`;
+                        msg.style.color = "#e84830";
+                    }
+
+                    actualizarRankingTrivia();
+                })
+                .catch(err => {
+                    if (btnAdivinar) {
+                        btnAdivinar.disabled = false;
+                        btnAdivinar.style.opacity = '1';
+                    }
+                });
+        }
+        
+        function cerrarTrivia() { document.getElementById('modalTrivia').style.display = 'none'; }
     </script>
 </body>
 </html>

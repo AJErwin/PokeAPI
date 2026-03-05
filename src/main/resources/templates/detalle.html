@@ -15,14 +15,17 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000 !important;
-            background-image: none !important;
+            
+            /* --- FONDO ACTUALIZADO --- */
+            /* He cambiado el color a un beige arena suave que encaja mejor con el estilo retro y resalta los menús. */
+            background-color: #D8C0A0; 
+            image-rendering: pixelated;
         }
 
         .battle-scene {
             width: 100vw;
             height: 100vh;
-            background: linear-gradient(to bottom, #def8f8 0%, #def8f8 60%, #98d8a8 60%, #98d8a8 100%);
+            background: rgba(255, 255, 255, 0); 
             position: relative;
             image-rendering: pixelated;
             display: flex;
@@ -75,10 +78,11 @@
             right: -10%;
             width: 70%;
             height: 150px;
-            background: radial-gradient(#60c860 60%, #98d8a8 100%);
+            background: #ffffff; 
             border-radius: 50%;
             z-index: 1;
             transition: background 0.5s ease;
+            border: 4px solid rgba(0,0,0,0.1);
         }
 
         .pokemon-sprite-battle {
@@ -180,7 +184,7 @@
 <body>
 
 <div class="battle-scene" id="mainScene">
-    <div class="wild-pkmn-info" id="infoPanel" onclick="toggleDetails()">
+    <div class="wild-pkmn-info expanded" id="infoPanel" onclick="toggleDetails()">
         <div id="nameHeader" style="display: flex; justify-content: space-between; font-family: 'Press Start 2P'; padding: 15px; margin: -20px -20px 15px -20px; border-bottom: 4px solid #585858; color: white; text-shadow: 2px 2px 0 #000; background: #585858;">
             <span id="displayName" th:text="${pokemon.nombre.toUpperCase()}"></span>
             <span th:text="'Lv' + (${pokemon.id} % 100 + 1)"></span>
@@ -188,9 +192,10 @@
         <div class="hp-bar-container">
             <div class="hp-fill"></div>
         </div>
-        <div style="font-size: 10px; color: #585858; text-align: right; margin-top: 5px; font-family: 'Press Start 2P';">PULSA PARA DATOS ▼</div>
+        
+        <div id="toggleText" style="font-size: 10px; color: #585858; text-align: right; margin-top: 5px; font-family: 'Press Start 2P';">CERRAR DATOS ▲</div>
 
-        <div id="extraData" style="display: none; margin-top: 20px; border-top: 4px solid #585858; padding-top: 15px;">
+        <div id="extraData" style="display: block; margin-top: 20px; border-top: 4px solid #585858; padding-top: 15px;">
             <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
                 <button class="btn-tab-mini active" onclick="event.stopPropagation(); switchTab('miniStats')">STATS</button>
                 <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniMoves')">MOVES</button>
@@ -291,9 +296,13 @@
     function toggleDetails() {
         const info = document.getElementById('infoPanel');
         const extra = document.getElementById('extraData');
+        const toggleText = document.getElementById('toggleText'); 
+        
         info.classList.toggle('expanded');
         const isExpanded = info.classList.contains('expanded');
         extra.style.display = isExpanded ? 'block' : 'none';
+        
+        toggleText.innerText = isExpanded ? "CERRAR DATOS ▲" : "VER DATOS ▼";
         
         if (isExpanded) {
             setTimeout(initChart, 50);
@@ -496,6 +505,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initChart, 150);
+
         const savedTheme = localStorage.getItem('pokedexTheme');
         if (savedTheme) {
             setSceneTheme(savedTheme);
