@@ -7,11 +7,14 @@ import PokeApi.Programacion.ML.Usuario;
 import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpSession;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -20,6 +23,12 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class PokemonController {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private EmailVerificationService emailService;
 
     @Autowired
     private PokemonService pokemonService;
@@ -303,4 +312,60 @@ public class PokemonController {
         return respuesta;
     }
 
+    //------------------ Recuperacion de contraseña ------------------//
+    private String generarCodigo() {
+        Random random = new Random();
+        int codigo = 100000 + random.nextInt(900000);
+        return String.valueOf(codigo);
+    }
+
+    @GetMapping("/forgot-password")
+    public String forgotPassword() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/recuperar")
+    public String enviarCodigo(@RequestParam String correo, HttpSession session) {
+        String sql = "SELECT COUNT(*) FROM usuario WHERE correo=?";
+        Integer existe = jdbcTemplate.queryForObject(sql, Integer.class, correo);
+
+        if (existe != null && existe > 0) {
+            String codigo = generarCodigo();
+
+            session.setAttribute("codigo", codigo);
+            session.setAttribute("correo", correo);
+
+            emailService.enviarCodigo(correo, codigo);
+
+            return "verificar-codigo";
+        }
+        return "forgot-password";
+    }
+
+    @PostMapping("/verificar-codigo")
+    public String verificarCodigo(@RequestParam String codigo, HttpSession session) {
+        String codigoSession = (String) session.getAttribute("codigo");
+
+        if (codigo.equals(codigoSession)) {
+            return "nueva-password";
+        }
+
+        return "verificar-codigo";
+    }
+
+    @PostMapping("/restablecer-password")
+    public String restablecerPassword(@RequestParam String password, HttpSession session) {
+        String correo = (String) session.getAttribute("correo");
+
+        String passwordEncriptado = passwordEncoder.encode(password);
+
+        String sql = "UPDATE usuario SET password=? WHERE correo=?";
+        jdbcTemplate.update(sql, passwordEncriptado, correo);
+
+        session.invalidate();
+
+        return "redirect:/login";
+    }
+
+    //------------------ Termina recuperacion de contraseña ------------------//
 }
