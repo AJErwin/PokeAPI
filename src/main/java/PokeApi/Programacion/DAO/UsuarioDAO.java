@@ -66,7 +66,7 @@ public class UsuarioDAO {
     }
 
     public int guardarUsuario(String username, String correo, String password) {
-        String sql = "INSERT INTO USUARIO (USERNAME, CORREO, PASSWORD, STATUS, ROLUSUARIO) VALUES (?, ?, ?, 0, 2)";
+        String sql = "INSERT INTO USUARIO (USERNAME, CORREO, PASSWORD, STATUS, ROLUSUARIO, RACHA_ACTUAL, MAX_RACHA) VALUES (?, ?, ?, 0, 2, 0, 0)";
         try {
             return jdbcTemplate.update(sql, username, correo, password);
         } catch (Exception e) {
@@ -140,13 +140,15 @@ public class UsuarioDAO {
     }
 
     public int updateUsuario(Usuario usuario) {
-        String sql = "UPDATE USUARIO SET USERNAME = ?, CORREO = ?, STATUS = ?, ROLUSUARIO = ? WHERE IDUSUARIO = ?";
+        String sql = "UPDATE USUARIO SET USERNAME = ?, CORREO = ?, STATUS = ?, ROLUSUARIO = ?, RACHA_ACTUAL = ?, MAX_RACHA = ? WHERE IDUSUARIO = ?";
         try {
             return jdbcTemplate.update(sql,
                     usuario.getUsername(),
                     usuario.getCorreo(),
                     usuario.getStatus(),
                     usuario.getRolusuario(),
+                    usuario.getRachaActual(),
+                    usuario.getMaxRacha(),
                     usuario.getIdUsuario());
         } catch (Exception e) {
             return 0;

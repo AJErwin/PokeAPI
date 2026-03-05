@@ -29,8 +29,7 @@ public class PokemonService {
             Pokemon pokemon = new Pokemon();
             pokemon.setNombre(p.get("name"));
             String urlDetalle = p.get("url");
-            String[] parts = urlDetalle.split("/");
-            String id = parts[parts.length - 1];
+            String id = urlDetalle.split("/")[urlDetalle.split("/").length - 1];
             pokemon.setId(Integer.parseInt(id));
             pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
             return pokemon;
@@ -38,93 +37,96 @@ public class PokemonService {
 
         Result<Pokemon> result = new Result<>();
         result.Correct = true;
-        result.Objects = lista; 
+        result.Objects = lista;
         return result;
     }
 
-    public List<Pokemon> buscarPokemon(String nombre) {
-        String url = "https://pokeapi.co/api/v2/pokemon?limit=1300&offset=0";
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-        List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
+    public List<Pokemon> buscarCombinado(String nombre, String type, String region) {
+        List<Pokemon> base;
 
-        return results.parallelStream()
-                .filter(p -> p.get("name").toLowerCase().contains(nombre.toLowerCase()))
-                .map(p -> {
-                    Pokemon pokemon = new Pokemon();
-                    pokemon.setNombre(p.get("name"));
-                    String urlDetalle = p.get("url");
-                    String[] parts = urlDetalle.split("/");
-                    String id = parts[parts.length - 1];
-                    pokemon.setId(Integer.parseInt(id));
-                    pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
-                    return pokemon;
-                })
-                .collect(Collectors.toList());
+        if (region != null && !region.isBlank() && !region.equals("all")) {
+            base = getByRegion(region);
+        } else {
+            String url = "https://pokeapi.co/api/v2/pokemon?limit=1010&offset=0";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            List<Map<String, String>> results = (List<Map<String, String>>) response.get("results");
+            base = results.parallelStream().map(p -> {
+                Pokemon pokemon = new Pokemon();
+                pokemon.setNombre(p.get("name"));
+                String id = p.get("url").split("/")[p.get("url").split("/").length - 1];
+                pokemon.setId(Integer.parseInt(id));
+                pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
+                return pokemon;
+            }).collect(Collectors.toList());
+        }
+
+        if (type != null && !type.isBlank() && !type.equals("all")) {
+            List<Pokemon> porTipo = getByType(type);
+            base = base.stream()
+                    .filter(p -> porTipo.stream().anyMatch(t -> t.getId() == p.getId()))
+                    .collect(Collectors.toList());
+        }
+
+        if (nombre != null && !nombre.isBlank()) {
+            String n = nombre.toLowerCase();
+            base = base.stream()
+                    .filter(p -> p.getNombre().toLowerCase().contains(n))
+                    .collect(Collectors.toList());
+        }
+
+        return base;
+    }
+
+    public List<Pokemon> buscarPokemon(String nombre) {
+        return buscarCombinado(nombre, null, null);
     }
 
     public List<Pokemon> getByRegion(String region) {
-        if (region == null || region.isBlank()) return new ArrayList<>();
+        if (region == null || region.isBlank() || region.equals("all")) return new ArrayList<>();
         String regionUrl = "https://pokeapi.co/api/v2/region/" + region;
         Map<String, Object> regionResponse = restTemplate.getForObject(regionUrl, Map.class);
         List<Map<String, Object>> pokedexes = (List<Map<String, Object>>) regionResponse.get("pokedexes");
         if (pokedexes == null || pokedexes.isEmpty()) return new ArrayList<>();
-        
+
         String pokedexUrl = (String) pokedexes.get(0).get("url");
         Map<String, Object> pokedexResponse = restTemplate.getForObject(pokedexUrl, Map.class);
         List<Map<String, Object>> entries = (List<Map<String, Object>>) pokedexResponse.get("pokemon_entries");
-        List<Pokemon> lista = new ArrayList<>();
-        for (Map<String, Object> entry : entries) {
+
+        return entries.parallelStream().map(entry -> {
             Map<String, Object> species = (Map<String, Object>) entry.get("pokemon_species");
-            String name = (String) species.get("name");
             String url = (String) species.get("url");
-            String cleanUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-            String idStr = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
+            String idStr = url.split("/")[url.split("/").length - 1];
             int id = Integer.parseInt(idStr);
             Pokemon pokemon = new Pokemon();
             pokemon.setId(id);
-            pokemon.setNombre(name);
+            pokemon.setNombre((String) species.get("name"));
             pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
-            lista.add(pokemon);
-        }
-        return lista;
+            return pokemon;
+        }).collect(Collectors.toList());
     }
 
     public List<Pokemon> getByType(String type) {
-        if (type == null || type.isBlank()) return new ArrayList<>();
+        if (type == null || type.isBlank() || type.equals("all")) return new ArrayList<>();
         String url = "https://pokeapi.co/api/v2/type/" + type;
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
         if (response == null || response.get("pokemon") == null) return new ArrayList<>();
-        
+
         List<Map<String, Object>> pokemonList = (List<Map<String, Object>>) response.get("pokemon");
-        List<Pokemon> lista = new ArrayList<>();
-        for (Map<String, Object> p : pokemonList) {
+        return pokemonList.parallelStream().map(p -> {
             Map<String, Object> poke = (Map<String, Object>) p.get("pokemon");
-            String name = (String) poke.get("name");
             String pokeUrl = (String) poke.get("url");
             String idStr = pokeUrl.split("/")[pokeUrl.split("/").length - 1];
             int id = Integer.parseInt(idStr);
             Pokemon pokemon = new Pokemon();
             pokemon.setId(id);
-            pokemon.setNombre(name);
+            pokemon.setNombre((String) poke.get("name"));
             pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png");
-            lista.add(pokemon);
-        }
-        return lista;
+            return pokemon;
+        }).collect(Collectors.toList());
     }
 
     public List<Pokemon> getByRegionAndType(String region, String type) {
-        boolean tieneRegion = region != null && !region.isBlank();
-        boolean tieneTipo = type != null && !type.isBlank();
-        if (tieneRegion && !tieneTipo) return getByRegion(region);
-        if (tieneTipo && !tieneRegion) return getByType(type);
-        if (tieneRegion && tieneTipo) {
-            List<Pokemon> porRegion = getByRegion(region);
-            List<Pokemon> porTipo = getByType(type);
-            return porRegion.stream()
-                    .filter(r -> porTipo.stream().anyMatch(t -> r.getId() == t.getId()))
-                    .collect(Collectors.toList());
-        }
-        return getPokemones(8, 0).Objects;
+        return buscarCombinado(null, type, region);
     }
 
     public List<Pokemon> getByTwoTypes(String type1, String type2) {
@@ -147,19 +149,19 @@ public class PokemonService {
         List<Integer> statsValores = statsList.stream()
                 .map(s -> (Integer) s.get("base_stat"))
                 .collect(Collectors.toList());
-        pokemon.setEstadisticas(statsValores); 
-        
+        pokemon.setEstadisticas(statsValores);
+
         List<Map<String, Object>> movesList = (List<Map<String, Object>>) response.get("moves");
         List<String> movimientos = movesList.stream()
                 .limit(10)
                 .map(m -> (String) ((Map<String, Object>) m.get("move")).get("name"))
                 .collect(Collectors.toList());
-        pokemon.setMovimientos(movimientos); 
+        pokemon.setMovimientos(movimientos);
 
         Map<String, Object> sprites = (Map<String, Object>) response.get("sprites");
         pokemon.setUrlImagen((String) sprites.get("front_default"));
-        pokemon.setUrlImagenShiny((String) ((Map<String, Object>) sprites).get("front_shiny"));
-        
+        pokemon.setUrlImagenShiny((String) sprites.get("front_shiny"));
+
         List<Map<String, Object>> typesList = (List<Map<String, Object>>) response.get("types");
         String tipos = typesList.stream()
                 .map(t -> (String) ((Map<String, Object>) t.get("type")).get("name"))
@@ -167,10 +169,6 @@ public class PokemonService {
         pokemon.setTipo(tipos);
 
         return pokemon;
-    }
-
-    public int obtenerIdPorUsername(String username) {
-        return pokemonDAO.obtenerIdPorNombre(username);
     }
 
     public Result Guardar(Pokemon pokemon, int idUsuario) {
@@ -185,14 +183,11 @@ public class PokemonService {
         return pokemonDAO.Delete(idPokemon, idUsuario);
     }
 
-
     public Pokemon getPokemonPorId(int idAleatorio) {
-    Pokemon pokemon = getById(idAleatorio);
-    
-    if (pokemon != null) {
-        pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + idAleatorio + ".png");
+        Pokemon pokemon = getById(idAleatorio);
+        if (pokemon != null) {
+            pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + idAleatorio + ".png");
+        }
+        return pokemon;
     }
-    
-    return pokemon;
-}
 }

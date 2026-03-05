@@ -8,9 +8,11 @@ import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
 import jakarta.mail.MessagingException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -144,8 +146,25 @@ public class PokemonController {
     }
 
     @GetMapping("/pokedex/detalle/{id}")
-    public String verDetalle(@PathVariable int id, Model model) {
+    public String verDetalle(@PathVariable int id, Model model, Principal principal) {
         Pokemon pokemon = pokemonService.getById(id);
+        String urlSonido = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/" + id + ".ogg";
+        pokemon.setUrlSonido(urlSonido);
+
+        List<Integer> idsFavoritos = new ArrayList<>();
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+                if (favoritos != null) {
+                    for (Pokemon fav : favoritos) {
+                        idsFavoritos.add(fav.getId());
+                    }
+                }
+            }
+        }
+
+        model.addAttribute("capturados", idsFavoritos); 
         model.addAttribute("pokemon", pokemon);
         return "detalle";
     }
@@ -196,33 +215,20 @@ public class PokemonController {
     }
 
     @PostMapping("/registro")
-    public String procesarRegistro(@RequestParam String username,
-            @RequestParam String correo,
-            @RequestParam String password,
-            Model model) throws MessagingException {
-
-        // Validación de correo duplicado
+    public String procesarRegistro(@RequestParam String username, @RequestParam String correo, @RequestParam String password, Model model) {
         if (usuarioDAO.getByCorreo(correo) != null) {
             model.addAttribute("error", "EL CORREO YA ESTÁ EN USO");
             return "registro";
         }
-
-        // Encriptar contraseña
         String passwordEncriptado = passwordEncoder.encode(password);
-
-        // Guardar usuario con STATUS=0
         int resultado = usuarioDAO.guardarUsuario(username, correo, passwordEncriptado);
-
         if (resultado > 0) {
-            Usuario usuario = usuarioDAO.getByCorreo(correo); // Obtenemos el usuario recién creado
-            // Enviar correo Pokémon con token
+            Usuario usuario = usuarioDAO.getByCorreo(correo);
             emailVerificationService.createToken(usuario.getIdUsuario(), correo);
             model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
-
         } else {
             model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
         }
-
         return "registro";
     }
 
@@ -244,8 +250,7 @@ public class PokemonController {
     public String verUsuarios(Model model) {
         List<Usuario> usuarios = usuarioDAO.getAllUsuarios();
         for (Usuario usuario : usuarios) {
-            List<Pokemon> favs = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
-            usuario.setFavoritos(favs);
+            usuario.setFavoritos(pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario()));
         }
         model.addAttribute("usuarios", usuarios);
         return "usuarios";
@@ -275,9 +280,6 @@ public class PokemonController {
             if (datosApi != null) {
                 pokemon.setNombre(datosApi.getNombre());
                 pokemon.setUrlImagen(datosApi.getUrlImagen());
-            } else {
-                pokemon.setNombre("???");
-                pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + pokemon.getId() + ".png");
             }
         }
         model.addAttribute("ranking", ranking);

@@ -1,23 +1,207 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <title th:text="'SALVAJE: ' + ${pokemon.nombre}"></title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-        <link rel="stylesheet" th:href="@{/css/pokedex-style.css?v=8}">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script th:src="@{/js/pokedex-effects.js?v=8}" defer></script>
-        <style>
-            body, html {
-                margin: 0;
-                padding: 0;
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                background-color: #000 !important;
-                background-image: none !important;
-            }
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'SALVAJE: ' + ${pokemon.nombre}"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/pokedex-style.css?v=8}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:src="@{/js/pokedex-effects.js?v=8}" defer></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            
+            /* --- FONDO ACTUALIZADO --- */
+            /* He cambiado el color a un beige arena suave que encaja mejor con el estilo retro y resalta los menús. */
+            background-color: #D8C0A0; 
+            image-rendering: pixelated;
+        }
+
+        .battle-scene {
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0); 
+            position: relative;
+            image-rendering: pixelated;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.5s ease;
+        }
+
+        .wild-pkmn-info {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            background-color: #f8f8d8;
+            border: 6px solid #585858;
+            border-radius: 0 0 30px 0;
+            padding: 20px;
+            width: 50%;
+            max-width: 600px;
+            box-shadow: 8px 8px 0 #bcbcbc;
+            z-index: 10;
+            transition: max-height 0.4s ease-out;
+            max-height: 140px; 
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .wild-pkmn-info.expanded {
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .hp-bar-container {
+            background-color: #585858;
+            height: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 3px solid #585858;
+        }
+
+        .hp-fill {
+            background-color: #40d840;
+            height: 100%;
+            width: 100%;
+            border-radius: 6px;
+            border: 3px solid #f8f8d8;
+        }
+
+        .platform {
+            position: absolute;
+            top: 50%;
+            right: -10%;
+            width: 70%;
+            height: 150px;
+            background: #ffffff; 
+            border-radius: 50%;
+            z-index: 1;
+            transition: background 0.5s ease;
+            border: 4px solid rgba(0,0,0,0.1);
+        }
+
+        .pokemon-sprite-battle {
+            position: absolute;
+            top: 25%;
+            right: 15%;
+            width: 30vw;
+            max-width: 400px;
+            z-index: 5;
+            transition: opacity 0.2s ease, filter 0.3s ease, transform 0.5s ease;
+            animation: appearFromBall 0.8s ease-out, bouncePkmn 2s infinite 0.8s ease-in-out;
+        }
+
+        .dialog-box {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 25%;
+            background-color: #385080;
+            border-top: 10px solid #f8f8f8;
+            color: white;
+            padding: 30px 50px;
+            font-size: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-sizing: border-box;
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+        }
+
+        .btn-tab-mini {
+            font-family: 'Press Start 2P';
+            font-size: 8px;
+            background: #585858;
+            color: white;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .btn-tab-mini.active { 
+            background: #38b0a8; 
+        }
+        
+        .mini-content { 
+            display: none; 
+            margin-top: 15px; 
+        }
+        
+        .active-content { 
+            display: block; 
+        }
+
+        @keyframes bouncePkmn {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .btn-group-battle {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn-action {
+            background: #f8f8f8;
+            color: #333;
+            border: 6px solid #585858;
+            padding: 15px 30px;
+            font-size: 18px;
+            text-decoration: none;
+            font-family: 'Press Start 2P';
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #000;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-action:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .btn-action:disabled {
+            background-color: #585858;
+            box-shadow: none;
+            transform: none;
+            pointer-events: none;
+            color: white;
+        }
+
+        #pokeball-container {
+            display: none;
+            position: absolute;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+<div class="battle-scene" id="mainScene">
+    <div class="wild-pkmn-info expanded" id="infoPanel" onclick="toggleDetails()">
+        <div id="nameHeader" style="display: flex; justify-content: space-between; font-family: 'Press Start 2P'; padding: 15px; margin: -20px -20px 15px -20px; border-bottom: 4px solid #585858; color: white; text-shadow: 2px 2px 0 #000; background: #585858;">
+            <span id="displayName" th:text="${pokemon.nombre.toUpperCase()}"></span>
+            <span th:text="'Lv' + (${pokemon.id} % 100 + 1)"></span>
+        </div>
+        <div class="hp-bar-container">
+            <div class="hp-fill"></div>
+        </div>
+        
+        <div id="toggleText" style="font-size: 10px; color: #585858; text-align: right; margin-top: 5px; font-family: 'Press Start 2P';">CERRAR DATOS ▲</div>
+
+        <div id="extraData" style="display: block; margin-top: 20px; border-top: 4px solid #585858; padding-top: 15px;">
+            <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button class="btn-tab-mini active" onclick="event.stopPropagation(); switchTab('miniStats')">STATS</button>
+                <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniMoves')">MOVES</button>
+                <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniForms')">FORMS</button>
+                <button class="btn-tab-mini" onclick="event.stopPropagation(); switchTab('miniStyle')">ESTILO</button>
+            </div>
 
             .battle-scene {
                 width: 100vw;
@@ -364,46 +548,49 @@
                 <div class="pokeball" id="animating-ball"></div>
             </div>
 
-            <div id="namingScreen" style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; flex-direction: column;">
-                <div style="background: #f8f8f8; border: 6px solid #585858; padding: 30px; text-align: center; box-shadow: 8px 8px 0 #000; width: 80%; max-width: 450px;">
-                    <p id="namingQuestion" style="font-family: 'Press Start 2P'; font-size: 14px; line-height: 1.8; color: #333; margin-bottom: 25px;"></p>
-                    <input type="text" id="nicknameInput" maxlength="12" style="font-family: 'Press Start 2P'; font-size: 18px; padding: 15px; border: 4px solid #585858; width: 80%; text-align: center; text-transform: uppercase; margin-bottom: 25px; outline: none;">
-                    <br>
-                    <button id="btnSaveNickname" class="btn-action" style="font-size: 14px; padding: 15px 30px;">ACEPTAR</button>
-                </div>
-            </div>
-
-            <div class="dialog-box" id="mainDialog">
-                <div id="dialogText" style="font-family: 'Press Start 2P';" th:text="'¡Un ' + ${pokemon.nombre.toUpperCase()} + ' salvaje!'"></div>
-                <div class="btn-group-battle">
-                    <button id="btnCapturar" type="button" class="btn-action" 
-                            th:data-id="${pokemon.id}"
-                            th:data-nombre="${pokemon.nombre}"
-                            th:data-img="${pokemon.urlImagen}"
-                            onclick="capturarEnBatalla(this)">
-                        CAPTURAR
-                    </button>
-                    <a th:href="@{/pokedex}" class="btn-action">HUIR</a>
-                </div>
-            </div>
+    <div id="namingScreen" style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="background: #f8f8f8; border: 6px solid #585858; padding: 30px; text-align: center; box-shadow: 8px 8px 0 #000; width: 80%; max-width: 450px;">
+            <p id="namingQuestion" style="font-family: 'Press Start 2P'; font-size: 14px; line-height: 1.8; color: #333; margin-bottom: 25px;"></p>
+            <input type="text" id="nicknameInput" maxlength="12" style="font-family: 'Press Start 2P'; font-size: 18px; padding: 15px; border: 4px solid #585858; width: 80%; text-align: center; text-transform: uppercase; margin-bottom: 25px; outline: none;">
+            <br>
+            <button id="btnSaveNickname" class="btn-action" style="font-size: 14px; padding: 15px 30px;">ACEPTAR</button>
         </div>
+    </div>
 
-        <script th:inline="javascript">
-            let myChart = null;
-            const statsData = [[${pokemon.estadisticas
-            }
-            ]];
-            const pkmnId = [[${pokemon.id
-            }
-            ]];
-            let isCurrentShiny = false;
-            function toggleDetails() {
-            const info = document.getElementById('infoPanel');
-            const extra = document.getElementById('extraData');
-            info.classList.toggle('expanded');
-            const isExpanded = info.classList.contains('expanded');
-            extra.style.display = isExpanded ? 'block' : 'none';
-            if (isExpanded) {
+    <div class="dialog-box" id="mainDialog">
+        <div id="dialogText" style="font-family: 'Press Start 2P';" th:text="'¡Un ' + ${pokemon.nombre.toUpperCase()} + ' salvaje!'"></div>
+        <div class="btn-group-battle">
+            <button id="btnCapturar" type="button" class="btn-action" 
+                    th:data-id="${pokemon.id}"
+                    th:data-nombre="${pokemon.nombre}"
+                    th:data-img="${pokemon.urlImagen}"
+                    th:disabled="${capturados != null and capturados.contains(pokemon.id)}"
+                    th:text="${capturados != null and capturados.contains(pokemon.id)} ? 'ATRAPADO' : 'CAPTURAR'"
+                    onclick="capturarEnBatalla(this)">
+            </button>
+            <a th:href="@{/pokedex}" class="btn-action">HUIR</a>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    let myChart = null;
+    const statsData = [[${pokemon.estadisticas}]];
+    const pkmnId = [[${pokemon.id}]];
+    let isCurrentShiny = false;
+
+    function toggleDetails() {
+        const info = document.getElementById('infoPanel');
+        const extra = document.getElementById('extraData');
+        const toggleText = document.getElementById('toggleText'); 
+        
+        info.classList.toggle('expanded');
+        const isExpanded = info.classList.contains('expanded');
+        extra.style.display = isExpanded ? 'block' : 'none';
+        
+        toggleText.innerText = isExpanded ? "CERRAR DATOS ▲" : "VER DATOS ▼";
+        
+        if (isExpanded) {
             setTimeout(initChart, 50);
             }
             }
@@ -494,36 +681,46 @@
                             },
                             plugins: {legend: {display: false}}
                     }
-            });
+                },
+                plugins: { legend: { display: false } }
             }
+        });
+    }
 
-            function capturarEnBatalla(btn) {
-            const ballContainer = document.getElementById('pokeball-container');
-            const ball = document.getElementById('animating-ball');
-            const pokemonSprite = document.getElementById('mainPkmn');
-            const dialogText = document.getElementById('dialogText');
-            const infoPanel = document.getElementById('infoPanel');
-            const namingScreen = document.getElementById('namingScreen');
-            const namingQuestion = document.getElementById('namingQuestion');
-            const nicknameInput = document.getElementById('nicknameInput');
-            const btnSaveNickname = document.getElementById('btnSaveNickname');
-            const id = btn.getAttribute('data-id');
-            const nombreOriginal = btn.getAttribute('data-nombre');
-            const urlImg = btn.getAttribute('data-img');
-            if (infoPanel !== null && infoPanel.classList.contains('expanded')) {
-            toggleDetails();
-            }
+    function capturarEnBatalla(btn) {
+        const ballContainer = document.getElementById('pokeball-container');
+        const ball = document.getElementById('animating-ball');
+        const pokemonSprite = document.getElementById('mainPkmn');
+        const dialogText = document.getElementById('dialogText');
+        const infoPanel = document.getElementById('infoPanel');
+        
+        const namingScreen = document.getElementById('namingScreen');
+        const namingQuestion = document.getElementById('namingQuestion');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const btnSaveNickname = document.getElementById('btnSaveNickname');
+        
+        const id = btn.getAttribute('data-id');
+        const nombreOriginal = btn.getAttribute('data-nombre');
+        const urlImg = btn.getAttribute('data-img');
 
-            if (ballContainer && ball) {
+        if (infoPanel !== null && infoPanel.classList.contains('expanded')) {
+            toggleDetails(); 
+        }
+
+        if (ballContainer && ball && pokemonSprite) {
+            const rect = pokemonSprite.getBoundingClientRect();
+            ballContainer.style.top = (rect.top + rect.height / 2) + 'px';
+            ballContainer.style.left = (rect.left + rect.width / 2) + 'px';
+            ballContainer.style.transform = 'translate(-50%, -50%)';
+            
             ballContainer.style.display = 'block';
             ball.classList.add('throw-animation');
             }
 
             setTimeout(() => {
             if (pokemonSprite) {
-            pokemonSprite.style.transition = '0.5s';
-            pokemonSprite.style.opacity = '0';
-            pokemonSprite.style.transform = 'scale(0.1) rotate(360deg)';
+                pokemonSprite.style.opacity = '0';
+                pokemonSprite.style.transform = 'scale(0.1) rotate(360deg)';
             }
 
             if (ball) {
@@ -550,32 +747,24 @@
             fetch('/pokedex/guardar', {method: 'POST', body: formData})
                     .then(response => response.text())
                     .then(data => {
-                    if (data === "OK") {
-                    let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
-                    if (!captured.includes(id.toString())) {
-                    captured.push(id.toString());
-                    localStorage.setItem('myCapturedPkmn', JSON.stringify(captured));
-                    }
-
-                    if (dialogText) {
-                    dialogText.innerText = `¡${apodo.toUpperCase()} se ha unido a tu equipo!`;
-                    }
-                    btn.innerText = "ATRAPADO";
-                    btn.disabled = true;
-                    btn.style.backgroundColor = "#585858";
-                    setTimeout(() => {
-                    if (ballContainer)
-                            ballContainer.style.opacity = '0';
-                    }, 1000);
-                    } else {
-                    alert("Error: " + data);
-                    if (ballContainer)
-                            ballContainer.style.display = 'none';
-                    if (pokemonSprite) {
-                    pokemonSprite.style.opacity = '1';
-                    pokemonSprite.style.transform = 'scale(1) rotate(0deg)';
-                    }
-                    }
+                        if (data === "OK") {
+                            if (dialogText) {
+                                dialogText.innerText = `¡${apodo.toUpperCase()} se ha unido a tu equipo!`;
+                            }
+                            btn.innerText = "ATRAPADO";
+                            btn.disabled = true;
+                            
+                            setTimeout(() => {
+                                if (ballContainer) ballContainer.style.opacity = '0';
+                            }, 1000);
+                        } else {
+                            alert("Error: " + data);
+                            if (ballContainer) ballContainer.style.display = 'none';
+                            if (pokemonSprite) {
+                                pokemonSprite.style.opacity = '1';
+                                pokemonSprite.style.transform = 'scale(1) rotate(0deg)';
+                            }
+                        }
                     })
                     .catch(err => {
                     if (ballContainer)
@@ -590,36 +779,38 @@
             document.body.classList.remove('theme-night', 'theme-gameboy');
             if (theme !== 'default') {
             document.body.classList.add('theme-' + theme);
-            }
-            localStorage.setItem('pokedexTheme', theme);
-            }
+        }
+        localStorage.setItem('pokedexTheme', theme);
+    }
 
-            function setSpriteStyle(style) {
-            const pkmn = document.getElementById('mainPkmn');
-            if (!pkmn)
-                    return;
-            pkmn.classList.remove('sprite-retro', 'sprite-shadow');
-            if (style === 'retro')
-                    pkmn.classList.add('sprite-retro');
-            if (style === 'shadow')
-                    pkmn.classList.add('sprite-shadow');
-            }
+    function setSpriteStyle(style) {
+        const pkmn = document.getElementById('mainPkmn');
+        if (!pkmn) return;
+        pkmn.classList.remove('sprite-retro', 'sprite-shadow');
+        if (style === 'retro') pkmn.classList.add('sprite-retro');
+        if (style === 'shadow') pkmn.classList.add('sprite-shadow');
+    }
 
-            document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('pokedexTheme');
-            if (savedTheme) {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initChart, 150);
+
+        const savedTheme = localStorage.getItem('pokedexTheme');
+        if (savedTheme) {
             setSceneTheme(savedTheme);
             }
 
-            let captured = JSON.parse(localStorage.getItem('myCapturedPkmn')) || [];
-            if (captured.includes(pkmnId.toString())) {
-            const btn = document.getElementById('btnCapturar');
-            if (btn) {
-            btn.innerText = "ATRAPADO";
-            btn.disabled = true;
-            btn.style.backgroundColor = "#585858";
-            }
-            }
+        const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pkmnId}.ogg`);
+        cry.volume = 0.4;
+        const playPromise = cry.play().catch(error => console.error("Error audio:", error));  
+
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Auto-play prevenido. Reproduciendo tras interacción.");
+                document.addEventListener('click', () => {
+                    cry.play();
+                }, { once: true });
+            });
+        }
 
             const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/${pkmnId}.ogg`);
             cry.volume = 0.4;
