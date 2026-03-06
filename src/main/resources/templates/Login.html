@@ -56,10 +56,13 @@
                 border:16px solid black;
                 z-index:2;
                 cursor:pointer;
-                transition: transform 0.3s ease;
                 display:flex;
                 justify-content:center;
                 align-items:center;
+                transition: transform 0.3s ease;
+
+                /* brillo */
+                animation: glow 1.5s infinite alternate;
             }
 
             .center-button::after{
@@ -77,6 +80,18 @@
 
             .center-button:active{
                 transform: scale(0.9);
+            }
+
+            /* animacion de brillo */
+            @keyframes glow{
+                0%{
+                    box-shadow:0 0 10px #fff, 0 0 20px #ff1a1a;
+                    transform:scale(1);
+                }
+                100%{
+                    box-shadow:0 0 25px #fff, 0 0 40px #ff1a1a;
+                    transform:scale(1.08);
+                }
             }
 
             .content{
@@ -181,32 +196,17 @@
                 transform:scale(1.03);
             }
 
-            .rotate {
+            .rotate{
                 animation: spin 1s linear forwards;
             }
 
             @keyframes spin{
-                0% {
+                0%{
                     transform: rotate(0deg);
                 }
-                100% {
+                100%{
                     transform: rotate(360deg);
                 }
-            }
-
-            .click-text{
-                position:absolute;
-                top:50%;
-                left:50%;
-                transform:translate(-50%, -50%);
-                width:100%;
-                text-align:center;
-                font-size:10px;
-                font-weight:bold;
-                color:black;
-                letter-spacing:1px;
-                z-index:10;
-                pointer-events:none;
             }
 
             @media(max-width:600px){
@@ -241,9 +241,7 @@
                 <div class="subtitle">Centro Pokémon</div>
             </div>
 
-            <div class="center-button" id="centerBtn">
-                <span class="click-text" id="clickText">CLICK AQUÍ</span>
-            </div>
+            <div class="center-button" id="centerBtn"></div>
 
             <div class="content" id="content">
 
@@ -281,7 +279,6 @@
             const pokeball = document.getElementById('pokeball');
             const content = document.getElementById('content');
             const title = document.getElementById('title');
-            const clickText = document.getElementById('clickText');
 
             const battleSounds = [
                 'https://play.pokemonshowdown.com/audio/cries/pikachu.mp3',
@@ -293,7 +290,7 @@
 
             centerBtn.addEventListener('click', () => {
 
-                clickText.style.display = "none";
+                centerBtn.style.animation = "none";
 
                 const soundSrc = battleSounds[Math.floor(Math.random() * battleSounds.length)];
                 const audio = new Audio(soundSrc);
