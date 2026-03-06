@@ -6,11 +6,16 @@ import PokeApi.Programacion.ML.Pokemon;
 import PokeApi.Programacion.ML.Usuario;
 import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpSession;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -21,6 +26,12 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class PokemonController {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private EmailVerificationService emailService;
 
     @Autowired
     private PokemonService pokemonService;
@@ -48,6 +59,99 @@ public class PokemonController {
 
     @GetMapping("/pokedex")
     public String mostrarPokedex(
+            @RequestParam(defaultValue = "8") int limit,
+            @RequestParam(defaultValue = "0") int offset,
+            Model model) {
+
+        Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+
+        boolean hasNext = apiResult.Objects.size() == limit;
+
+        model.addAttribute("pokemones", apiResult.Objects);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("urlBase", "/pokedex");
+        model.addAttribute("hasNext", hasNext);
+
+        return "index";
+    }
+
+    @GetMapping("/pokedex/buscar")
+    public String buscarPokemon(@RequestParam String nombre,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "8") int limit,
+            Model model) {
+
+        List<Pokemon> resultados = pokemonService.buscarPokemon(nombre);
+
+        List<Pokemon> paginados = resultados.stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+
+        boolean hasNext = (offset + limit) < resultados.size();
+
+        model.addAttribute("pokemones", paginados);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("nombre", nombre);
+        model.addAttribute("urlBase", "/pokedex/buscar");
+        model.addAttribute("hasNext", hasNext);
+
+        return "index";
+    }
+
+    @GetMapping("/pokedex/dual")
+    public String buscarDual(@RequestParam String type1,
+            @RequestParam String type2,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "8") int limit,
+            Model model) {
+
+        List<Pokemon> resultados = pokemonService.getByTwoTypes(type1, type2);
+
+        List<Pokemon> paginados = resultados.stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+
+        boolean hasNext = (offset + limit) < resultados.size();
+
+        model.addAttribute("pokemones", paginados);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("type1", type1);
+        model.addAttribute("type2", type2);
+        model.addAttribute("urlBase", "/pokedex/dual");
+        model.addAttribute("hasNext", hasNext);
+
+        return "index";
+    }
+
+    @GetMapping("/filtro")
+    public String filtrar(@RequestParam(required = false) String region,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "8") int limit,
+            Model model) {
+
+        List<Pokemon> resultados = pokemonService.getByRegionAndType(region, type);
+
+        List<Pokemon> paginados = resultados.stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+
+        boolean hasNext = (offset + limit) < resultados.size();
+
+        model.addAttribute("pokemones", paginados);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("region", region);
+        model.addAttribute("type", type);
+        model.addAttribute("urlBase", "/filtro");
+        model.addAttribute("hasNext", hasNext);
+
             @RequestParam(defaultValue = "10") int limit,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(required = false) String nombre,
@@ -149,6 +253,11 @@ public class PokemonController {
         try {
             Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
             Result result = pokemonService.Delete(idPokemon, usuario.getIdUsuario());
+            if (result.Correct) {
+                return "OK";
+            } else {
+                return "Error: " + result.ErrorMessage;
+            }
             return result.Correct ? "OK" : "Error: " + result.ErrorMessage;
         } catch (Exception e) {
             return "Error al eliminar: " + e.getMessage();
@@ -161,14 +270,30 @@ public class PokemonController {
     }
 
     @PostMapping("/registro")
+    public String procesarRegistro(@RequestParam String username,
+            @RequestParam String correo,
+            @RequestParam String password,
+            Model model) throws MessagingException {
+
+        // Validación de correo duplicado
     public String procesarRegistro(@RequestParam String username, @RequestParam String correo, @RequestParam String password, Model model) {
         if (usuarioDAO.getByCorreo(correo) != null) {
-            model.addAttribute("error", "EL CORREO YA ESTA EN USO");
+            model.addAttribute("error", "EL CORREO YA ESTÁ EN USO");
             return "registro";
         }
+
+        // Encriptar contraseña
+        String passwordEncriptado = passwordEncoder.encode(password);
+
+        // Guardar usuario con STATUS=0
         String passwordEncriptado = passwordEncoder.encode(password);
         int resultado = usuarioDAO.guardarUsuario(username, correo, passwordEncriptado);
         if (resultado > 0) {
+            Usuario usuario = usuarioDAO.getByCorreo(correo); // Obtenemos el usuario recién creado
+            // Enviar correo Pokémon con token
+            emailVerificationService.createToken(usuario.getIdUsuario(), correo);
+            model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
+
             Usuario usuario = usuarioDAO.getByCorreo(correo);
             emailVerificationService.createToken(usuario.getIdUsuario(), correo);
             model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
@@ -176,6 +301,20 @@ public class PokemonController {
             model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
         }
         return "registro";
+    }
+
+    @GetMapping("/verify")
+    public String verificarCuenta(@RequestParam("token") String token, Model model) {
+
+        boolean validado = emailVerificationService.validateToken(token);
+
+        if (validado) {
+            model.addAttribute("exito");
+        } else {
+            model.addAttribute("error");
+        }
+
+        return "login"; // Puedes cambiar a login.html si quieres
     }
 
     @GetMapping("/pokedex/usuarios")
@@ -222,6 +361,78 @@ public class PokemonController {
     @GetMapping("/pokedex/api/trivia-dia")
     @ResponseBody
     public Pokemon getTriviaJson() {
+        int idAleatorio = (int) (Math.random() * 1350) + 1;
+        return pokemonService.getById(idAleatorio);
+    }
+
+    @PostMapping("/pokedex/api/trivia-validar")
+    @ResponseBody
+    public Map<String, Object> validarTrivia(@RequestParam String nombreIntento, @RequestParam int idPokemon) {
+        Pokemon p = pokemonService.getById(idPokemon);
+        boolean esCorrecto = p.getNombre().equalsIgnoreCase(nombreIntento.trim());
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("success", esCorrecto);
+        respuesta.put("nombreReal", p.getNombre().toUpperCase());
+        return respuesta;
+    }
+
+    //------------------ Recuperacion de contraseña ------------------//
+    private String generarCodigo() {
+        Random random = new Random();
+        int codigo = 100000 + random.nextInt(900000);
+        return String.valueOf(codigo);
+    }
+
+    @GetMapping("/forgot-password")
+    public String forgotPassword() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/recuperar")
+    public String enviarCodigo(@RequestParam String correo, HttpSession session) {
+        String sql = "SELECT COUNT(*) FROM usuario WHERE correo=?";
+        Integer existe = jdbcTemplate.queryForObject(sql, Integer.class, correo);
+
+        if (existe != null && existe > 0) {
+            String codigo = generarCodigo();
+
+            session.setAttribute("codigo", codigo);
+            session.setAttribute("correo", correo);
+
+            emailService.enviarCodigo(correo, codigo);
+
+            return "verificar-codigo";
+        }
+        return "forgot-password";
+    }
+
+    @PostMapping("/verificar-codigo")
+    public String verificarCodigo(@RequestParam String codigo, HttpSession session) {
+        String codigoSession = (String) session.getAttribute("codigo");
+
+        if (codigo.equals(codigoSession)) {
+            return "nueva-password";
+        }
+
+        return "verificar-codigo";
+    }
+
+    @PostMapping("/restablecer-password")
+    public String restablecerPassword(@RequestParam String password, HttpSession session) {
+        String correo = (String) session.getAttribute("correo");
+
+        String passwordEncriptado = passwordEncoder.encode(password);
+
+        String sql = "UPDATE usuario SET password=? WHERE correo=?";
+        jdbcTemplate.update(sql, passwordEncriptado, correo);
+
+        session.invalidate();
+
+        return "redirect:/login";
+    }
+
+    //------------------ Termina recuperacion de contraseña ------------------//
+}
         int idAleatorio = (int) (Math.random() * 1010) + 1;
         return pokemonService.getById(idAleatorio);
     }

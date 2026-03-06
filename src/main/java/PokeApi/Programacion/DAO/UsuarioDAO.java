@@ -187,6 +187,7 @@ public class UsuarioDAO {
 
         return pokemon;
     }
+}
 
     public List<Usuario> getTop5Rachas() {
         String sql = "SELECT USERNAME, MAX_RACHA FROM USUARIO WHERE MAX_RACHA > 0 ORDER BY MAX_RACHA DESC FETCH FIRST 5 ROWS ONLY";

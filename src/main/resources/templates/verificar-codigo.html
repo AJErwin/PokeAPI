@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Verificar código</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Courier New, monospace;
+
+    background:
+        linear-gradient(135deg, rgba(255,0,0,0.15) 25%, transparent 25%) -50px 0,
+        linear-gradient(225deg, rgba(255,0,0,0.15) 25%, transparent 25%) -50px 0,
+        linear-gradient(315deg, rgba(255,255,255,0.25) 25%, transparent 25%),
+        linear-gradient(45deg, rgba(255,255,255,0.25) 25%, transparent 25%);
+    background-size:100px 100px;
+    background-color:#0b3d0b;
+}
+
+/* POKEBALL */
+
+.pokeball{
+    width:420px;
+    height:420px;
+    border-radius:50%;
+    background:linear-gradient(to bottom,#d10000 50%, white 50%);
+    border:10px solid black;
+    position:relative;
+}
+
+/* línea central */
+
+.pokeball::before{
+    content:"";
+    position:absolute;
+    width:100%;
+    height:14px;
+    background:black;
+    top:50%;
+    transform:translateY(-50%);
+}
+
+/* botón central */
+
+.center-button{
+    width:120px;
+    height:120px;
+    background:white;
+    border-radius:50%;
+    border:10px solid black;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    z-index:1;
+}
+
+/* título */
+
+.top{
+    position:absolute;
+    top:60px;
+    width:100%;
+    text-align:center;
+    color:white;
+}
+
+.top h2{
+    margin:0;
+}
+
+/* formulario centrado */
+
+.form-center{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    z-index:3;
+}
+
+input{
+    padding:12px;
+    width:230px;
+    border-radius:10px;
+    border:2px solid black;
+    text-align:center;
+    margin-bottom:10px;
+}
+
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#ffcc00;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#ffd633;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="pokeball">
+
+    <div class="top">
+        <h2>Verifica el código</h2>
+    </div>
+
+    <div class="center-button"></div>
+
+    <div class="form-center">
+
+        <form action="/verificar-codigo" method="post">
+
+            <input type="text" name="codigo" placeholder="Código enviado al correo" required>
+
+            <br>
+
+            <button type="submit">
+                Verificar
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>
