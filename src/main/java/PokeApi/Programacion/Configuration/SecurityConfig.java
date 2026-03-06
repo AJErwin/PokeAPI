@@ -15,7 +15,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/login", "/registro", "/verify", "/css/**", "/js/**", "/images/**", "/videos/**").permitAll()
+            .requestMatchers("/login", "/registro", "/forgot-password","/recuperar", "/verificar-codigo", "/restablecer-password", "/verify", "/css/**", "/js/**", "/images/**", "/videos/**").permitAll()
             .anyRequest().authenticated()
         )
         .formLogin(form -> form

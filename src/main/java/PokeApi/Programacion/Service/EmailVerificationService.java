@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.springframework.mail.SimpleMailMessage;
 
 @Service
 public class EmailVerificationService {
@@ -160,4 +161,82 @@ public class EmailVerificationService {
 
         }, token);
     }
+
+    //------------------ Recuperacion de contraseña ------------------//
+    public void enviarCodigo(String correo, String codigo) {
+
+        try {
+
+            MimeMessage mensaje = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+            helper.setTo(correo);
+            helper.setSubject("Recuperación de contraseña de tu Pokedex");
+
+            String html = """
+        <!DOCTYPE html>
+        <html>
+        <body style="margin:0;padding:0;background:#1b0033;font-family:Arial,sans-serif;color:white;">
+        
+        <table align="center" width="600" style="background:#2b0050;border-radius:12px;padding:20px;text-align:center;">
+        
+            <tr>
+                <td>
+                    <h2 style="color:#b48cff;">🔮 Recuperación de contraseña</h2>
+                    <p>Tu código para restablecer tu contraseña es:</p>
+                    
+                    <div style="
+                        font-size:28px;
+                        font-weight:bold;
+                        background:white;
+                        color:black;
+                        padding:10px;
+                        border-radius:8px;
+                        display:inline-block;
+                        letter-spacing:5px;">
+                        """ + codigo + """
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td style="padding-top:20px;">
+                    <p>La evolución del poder oscuro te acompaña...</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding-top:10px;">
+                    
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/92.png" width="100">
+                    
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/93.png" width="100">
+                    
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png" width="100">
+                    
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding-top:20px;font-size:13px;color:#d0c0ff;">
+                    Gastly → Haunter → Gengar
+                </td>
+            </tr>
+
+        </table>
+
+        </body>
+        </html>
+        """;
+
+            helper.setText(html, true);
+
+            mailSender.send(mensaje);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //------------------ Fin recuperacion de contraseña ------------------//
 }

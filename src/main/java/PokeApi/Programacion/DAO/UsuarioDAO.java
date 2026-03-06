@@ -27,6 +27,9 @@ public class UsuarioDAO {
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
                 usuario.setRolusuario(rs.getInt("ROLUSUARIO"));
+                
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -52,6 +55,9 @@ public class UsuarioDAO {
                 usuario.setPassword(rs.getString("PASSWORD"));
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
+                
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -84,6 +90,9 @@ public class UsuarioDAO {
                 usuario.setUsername(rs.getString("USERNAME"));
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
+                
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -133,6 +142,10 @@ public class UsuarioDAO {
                 usuario.setCorreo(rs.getString("CORREO"));
                 usuario.setStatus(rs.getInt("STATUS"));
                 usuario.setRolusuario(rs.getInt("ROLUSUARIO"));
+                
+                // Nuevos campos de racha
+                usuario.setRachaActual(rs.getInt("RACHA_ACTUAL"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
 
                 Rol rol = new Rol();
                 rol.setIdRol(rs.getInt("ROLUSUARIO"));
@@ -181,6 +194,21 @@ public class UsuarioDAO {
 
         return pokemon;
     }
+
+    public List<Usuario> getTop5Rachas() {
+        String sql = "SELECT USERNAME, MAX_RACHA FROM USUARIO WHERE MAX_RACHA > 0 ORDER BY MAX_RACHA DESC FETCH FIRST 5 ROWS ONLY";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                Usuario usuario = new Usuario();
+                usuario.setUsername(rs.getString("USERNAME"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
+                return usuario;
+            });
+        } catch (Exception e) {
+            return new java.util.ArrayList<>();
+        }
+    }
+}
 
     public List<Usuario> getTop5Rachas() {
         String sql = "SELECT USERNAME, MAX_RACHA FROM USUARIO WHERE MAX_RACHA > 0 ORDER BY MAX_RACHA DESC FETCH FIRST 5 ROWS ONLY";

@@ -7,11 +7,18 @@ import PokeApi.Programacion.ML.Usuario;
 import PokeApi.Programacion.Service.EmailVerificationService;
 import PokeApi.Programacion.Service.PokemonService;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpSession;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+<<<<<<< Canapk
+=======
+import java.util.Random;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+>>>>>>> master
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -22,6 +29,12 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class PokemonController {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private EmailVerificationService emailService;
 
     @Autowired
     private PokemonService pokemonService;
@@ -103,6 +116,50 @@ public class PokemonController {
         model.addAttribute("regionFiltro", region);
         model.addAttribute("hasNext", hasNext);
 
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String region,
+            Model model, Principal principal) {
+
+        List<Pokemon> listaFinal = new ArrayList<>();
+
+        if ((nombre != null && !nombre.isEmpty())
+                || (type != null && !type.equals("all") && !type.isEmpty())
+                || (region != null && !region.equals("all") && !region.isEmpty())) {
+
+            List<Pokemon> resultados = pokemonService.buscarCombinado(nombre, type, region);
+            listaFinal = resultados.stream().skip(offset).limit(limit).collect(Collectors.toList());
+            model.addAttribute("totalResultados", resultados.size());
+        } else {
+            Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+            if (apiResult.Correct && apiResult.Objects != null) {
+                listaFinal = apiResult.Objects;
+            }
+        }
+
+        List<Integer> idsFavoritos = new ArrayList<>();
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+                if (favoritos != null) {
+                    for (Pokemon fav : favoritos) {
+                        idsFavoritos.add(fav.getId());
+                    }
+                }
+            }
+        }
+
+        model.addAttribute("pokemones", listaFinal);
+        model.addAttribute("capturados", idsFavoritos);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("nombreFiltro", nombre);
+        model.addAttribute("tipoFiltro", type);
+        model.addAttribute("regionFiltro", region);
+
         return "index";
     }
 
@@ -166,6 +223,7 @@ public class PokemonController {
             } else {
                 return "Error: " + result.ErrorMessage;
             }
+            return result.Correct ? "OK" : "Error: " + result.ErrorMessage;
         } catch (Exception e) {
             return "Error al eliminar: " + e.getMessage();
         }
@@ -177,17 +235,39 @@ public class PokemonController {
     }
 
     @PostMapping("/registro")
+<<<<<<< Canapk
+=======
+    public String procesarRegistro(@RequestParam String username,
+            @RequestParam String correo,
+            @RequestParam String password,
+            Model model) throws MessagingException {
+
+        // Validación de correo duplicado
+>>>>>>> master
     public String procesarRegistro(@RequestParam String username, @RequestParam String correo, @RequestParam String password, Model model) {
         if (usuarioDAO.getByCorreo(correo) != null) {
             model.addAttribute("error", "EL CORREO YA ESTÁ EN USO");
             return "registro";
         }
         String passwordEncriptado = passwordEncoder.encode(password);
+<<<<<<< Canapk
+=======
+
+        // Guardar usuario con STATUS=0
+        String passwordEncriptado = passwordEncoder.encode(password);
+>>>>>>> master
         int resultado = usuarioDAO.guardarUsuario(username, correo, passwordEncriptado);
         if (resultado > 0) {
             Usuario usuario = usuarioDAO.getByCorreo(correo);
             emailVerificationService.createToken(usuario.getIdUsuario(), correo);
             model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
+<<<<<<< Canapk
+=======
+
+            Usuario usuario = usuarioDAO.getByCorreo(correo);
+            emailVerificationService.createToken(usuario.getIdUsuario(), correo);
+            model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
+>>>>>>> master
         } else {
             model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
         }
@@ -235,6 +315,7 @@ public class PokemonController {
     }
 
     @GetMapping("/pokedex/ranking")
+<<<<<<< Canapk
     public String verRanking(
             @RequestParam(name = "orden", defaultValue = "desc") String orden, 
             @RequestParam(defaultValue = "20") int limit,   
@@ -243,6 +324,17 @@ public class PokemonController {
         
         List<Pokemon> ranking = usuarioDAO.getFavoritosGlobales(orden, limit, offset);
         
+=======
+    public String verRanking(@RequestParam(name = "orden", defaultValue = "desc") String orden, Model model) {
+        List<Pokemon> ranking = usuarioDAO.getFavoritosGlobales(orden);
+        for (Pokemon pokemon : ranking) {
+            Pokemon datosApi = pokemonService.getById(pokemon.getId());
+            if (datosApi != null) {
+                pokemon.setNombre(datosApi.getNombre());
+                pokemon.setUrlImagen(datosApi.getUrlImagen());
+            }
+        }
+>>>>>>> master
         model.addAttribute("ranking", ranking);
         model.addAttribute("ordenActual", orden);
         
@@ -289,9 +381,107 @@ public class PokemonController {
         return respuesta;
     }
 
+<<<<<<< Canapk
+=======
+    //------------------ Recuperacion de contraseña ------------------//
+    private String generarCodigo() {
+        Random random = new Random();
+        int codigo = 100000 + random.nextInt(900000);
+        return String.valueOf(codigo);
+    }
+
+    @GetMapping("/forgot-password")
+    public String forgotPassword() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/recuperar")
+    public String enviarCodigo(@RequestParam String correo, HttpSession session) {
+        String sql = "SELECT COUNT(*) FROM usuario WHERE correo=?";
+        Integer existe = jdbcTemplate.queryForObject(sql, Integer.class, correo);
+
+        if (existe != null && existe > 0) {
+            String codigo = generarCodigo();
+
+            session.setAttribute("codigo", codigo);
+            session.setAttribute("correo", correo);
+
+            emailService.enviarCodigo(correo, codigo);
+
+            return "verificar-codigo";
+        }
+        return "forgot-password";
+    }
+
+    @PostMapping("/verificar-codigo")
+    public String verificarCodigo(@RequestParam String codigo, HttpSession session) {
+        String codigoSession = (String) session.getAttribute("codigo");
+
+        if (codigo.equals(codigoSession)) {
+            return "nueva-password";
+        }
+
+        return "verificar-codigo";
+    }
+
+    @PostMapping("/restablecer-password")
+    public String restablecerPassword(@RequestParam String password, HttpSession session) {
+        String correo = (String) session.getAttribute("correo");
+
+        String passwordEncriptado = passwordEncoder.encode(password);
+
+        String sql = "UPDATE usuario SET password=? WHERE correo=?";
+        jdbcTemplate.update(sql, passwordEncriptado, correo);
+
+        session.invalidate();
+
+        return "redirect:/login";
+    }
+
+    //------------------ Termina recuperacion de contraseña ------------------//
+}
+        int idAleatorio = (int) (Math.random() * 1010) + 1;
+        return pokemonService.getById(idAleatorio);
+    }
+
+
+    @PostMapping("/pokedex/api/trivia-validar")
+    @ResponseBody
+    public Map<String, Object> validarTrivia(@RequestParam String nombreIntento, @RequestParam int idPokemon, Principal principal) {
+        Pokemon p = pokemonService.getById(idPokemon);
+        boolean esCorrecto = p.getNombre().equalsIgnoreCase(nombreIntento.trim());
+        
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("success", esCorrecto);
+        respuesta.put("nombreReal", p.getNombre().toUpperCase());
+
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                if (esCorrecto) {
+                    usuario.setRachaActual(usuario.getRachaActual() + 1);
+                    if (usuario.getRachaActual() > usuario.getMaxRacha()) {
+                        usuario.setMaxRacha(usuario.getRachaActual());
+                    }
+                } else {
+                    usuario.setRachaActual(0);
+                }
+                
+                usuarioDAO.updateUsuario(usuario); 
+                respuesta.put("rachaActual", usuario.getRachaActual());
+            }
+        }
+        return respuesta;
+    }
+
+>>>>>>> master
     @GetMapping("/pokedex/api/trivia-ranking")
     @ResponseBody
     public List<Usuario> obtenerRankingTrivia() {
         return usuarioDAO.getTop5Rachas(); 
     }
+<<<<<<< Canapk
 }
+=======
+}
+>>>>>>> master
