@@ -9,11 +9,16 @@
     <style>
         body {
             font-family: 'Press Start 2P', cursive;
-            background-color: #38b0a8;
             padding: 20px;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
+            
+            /* --- FONDO INTEGRADO --- */
+            background-image: url('/img/Fondo.jpg'); 
+            background-size: 100%; 
+            background-position: top center;
+            background-attachment: fixed;
+            background-repeat: repeat;
+            background-color: #70c850;
+            image-rendering: pixelated;
         }
         .ranking-header {
             background: #f8f8f8;
@@ -125,6 +130,20 @@
             border: 4px solid #000;
             font-size: 8px;
         }
+
+        /* ESTILOS DE PAGINACIÓN AÑADIDOS */
+        .pagination-container {
+            background: #f8f8f8;
+            border: 8px solid #585858;
+            padding: 15px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-radius: 15px;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -145,13 +164,14 @@
 
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         <div class="col" th:each="pokemon, stat : ${ranking}">
+            
             <div class="pokemon-card" 
-                 th:classappend="${ordenActual == 'desc'} ? 
+                 th:classappend="${ordenActual == 'desc' and (currentOffset == null or currentOffset == 0)} ? 
                                 (${stat.index == 0} ? 'card-oro' : 
                                 (${stat.index == 1} ? 'card-plata' : 
                                 (${stat.index == 2} ? 'card-bronce' : ''))) : ''">
                 
-                <div class="rank-badge" th:text="'#' + (${stat.index} + 1)"></div>
+                <div class="rank-badge" th:text="'#' + (${currentOffset != null ? currentOffset : 0} + ${stat.index} + 1)"></div>
                 
                 <div class="img-container">
                     <img th:src="${pokemon.urlImagen}" alt="Pokemon">
@@ -168,6 +188,19 @@
     
     <div th:if="${#lists.isEmpty(ranking)}" class="text-center mt-5" style="color: white; font-size: 12px; background: #000; padding: 20px; border: 4px solid #fff;">
         NO HAY DATOS DE CAPTURAS AÚN.
+    </div>
+
+    <div class="pagination-container" th:if="${limit != null}">
+        <a th:if="${currentOffset > 0}" 
+           th:href="@{/pokedex/ranking(limit=${limit}, offset=${currentOffset - limit}, orden=${ordenActual})}" 
+           class="btn-retro" style="margin:0;"> &lt; ANTERIOR </a>
+        <div th:unless="${currentOffset > 0}"></div> 
+        
+        <span style="font-family: 'Press Start 2P'; font-size: 10px; color: #333;" 
+              th:text="'PÁGINA ' + (${currentOffset / limit} + 1)"></span>
+        
+        <a th:href="@{/pokedex/ranking(limit=${limit}, offset=${currentOffset + limit}, orden=${ordenActual})}" 
+           class="btn-retro" style="margin:0;"> SIGUIENTE &gt; </a>
     </div>
 
 </div>

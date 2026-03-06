@@ -9,12 +9,15 @@ import PokeApi.Programacion.Service.PokemonService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpSession;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -149,12 +152,73 @@ public class PokemonController {
         model.addAttribute("urlBase", "/filtro");
         model.addAttribute("hasNext", hasNext);
 
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String region,
+            Model model, Principal principal) {
+
+        List<Pokemon> listaFinal = new ArrayList<>();
+
+        if ((nombre != null && !nombre.isEmpty())
+                || (type != null && !type.equals("all") && !type.isEmpty())
+                || (region != null && !region.equals("all") && !region.isEmpty())) {
+
+            List<Pokemon> resultados = pokemonService.buscarCombinado(nombre, type, region);
+            listaFinal = resultados.stream().skip(offset).limit(limit).collect(Collectors.toList());
+            model.addAttribute("totalResultados", resultados.size());
+        } else {
+            Result<Pokemon> apiResult = pokemonService.getPokemones(limit, offset);
+            if (apiResult.Correct && apiResult.Objects != null) {
+                listaFinal = apiResult.Objects;
+            }
+        }
+
+        List<Integer> idsFavoritos = new ArrayList<>();
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+                if (favoritos != null) {
+                    for (Pokemon fav : favoritos) {
+                        idsFavoritos.add(fav.getId());
+                    }
+                }
+            }
+        }
+
+        model.addAttribute("pokemones", listaFinal);
+        model.addAttribute("capturados", idsFavoritos);
+        model.addAttribute("currentOffset", offset);
+        model.addAttribute("limit", limit);
+        model.addAttribute("nombreFiltro", nombre);
+        model.addAttribute("tipoFiltro", type);
+        model.addAttribute("regionFiltro", region);
+
         return "index";
     }
 
     @GetMapping("/pokedex/detalle/{id}")
-    public String verDetalle(@PathVariable int id, Model model) {
+    public String verDetalle(@PathVariable int id, Model model, Principal principal) {
         Pokemon pokemon = pokemonService.getById(id);
+        String urlSonido = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/cries/" + id + ".ogg";
+        pokemon.setUrlSonido(urlSonido);
+
+        List<Integer> idsFavoritos = new ArrayList<>();
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                List<Pokemon> favoritos = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
+                if (favoritos != null) {
+                    for (Pokemon fav : favoritos) {
+                        idsFavoritos.add(fav.getId());
+                    }
+                }
+            }
+        }
+
+        model.addAttribute("capturados", idsFavoritos); 
         model.addAttribute("pokemon", pokemon);
         return "detalle";
     }
@@ -194,6 +258,7 @@ public class PokemonController {
             } else {
                 return "Error: " + result.ErrorMessage;
             }
+            return result.Correct ? "OK" : "Error: " + result.ErrorMessage;
         } catch (Exception e) {
             return "Error al eliminar: " + e.getMessage();
         }
@@ -211,6 +276,7 @@ public class PokemonController {
             Model model) throws MessagingException {
 
         // Validación de correo duplicado
+    public String procesarRegistro(@RequestParam String username, @RequestParam String correo, @RequestParam String password, Model model) {
         if (usuarioDAO.getByCorreo(correo) != null) {
             model.addAttribute("error", "EL CORREO YA ESTÁ EN USO");
             return "registro";
@@ -220,18 +286,20 @@ public class PokemonController {
         String passwordEncriptado = passwordEncoder.encode(password);
 
         // Guardar usuario con STATUS=0
+        String passwordEncriptado = passwordEncoder.encode(password);
         int resultado = usuarioDAO.guardarUsuario(username, correo, passwordEncriptado);
-
         if (resultado > 0) {
             Usuario usuario = usuarioDAO.getByCorreo(correo); // Obtenemos el usuario recién creado
             // Enviar correo Pokémon con token
             emailVerificationService.createToken(usuario.getIdUsuario(), correo);
             model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
 
+            Usuario usuario = usuarioDAO.getByCorreo(correo);
+            emailVerificationService.createToken(usuario.getIdUsuario(), correo);
+            model.addAttribute("exito", "CUENTA CREADA. REVISA TU CORREO PARA ACTIVARLA.");
         } else {
             model.addAttribute("error", "ERROR AL GUARDAR EL USUARIO");
         }
-
         return "registro";
     }
 
@@ -253,8 +321,7 @@ public class PokemonController {
     public String verUsuarios(Model model) {
         List<Usuario> usuarios = usuarioDAO.getAllUsuarios();
         for (Usuario usuario : usuarios) {
-            List<Pokemon> favs = pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario());
-            usuario.setFavoritos(favs);
+            usuario.setFavoritos(pokemonService.obtenerTodosLosGuardados(usuario.getIdUsuario()));
         }
         model.addAttribute("usuarios", usuarios);
         return "usuarios";
@@ -284,9 +351,6 @@ public class PokemonController {
             if (datosApi != null) {
                 pokemon.setNombre(datosApi.getNombre());
                 pokemon.setUrlImagen(datosApi.getUrlImagen());
-            } else {
-                pokemon.setNombre("???");
-                pokemon.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + pokemon.getId() + ".png");
             }
         }
         model.addAttribute("ranking", ranking);
@@ -368,4 +432,44 @@ public class PokemonController {
     }
 
     //------------------ Termina recuperacion de contraseña ------------------//
+}
+        int idAleatorio = (int) (Math.random() * 1010) + 1;
+        return pokemonService.getById(idAleatorio);
+    }
+
+
+    @PostMapping("/pokedex/api/trivia-validar")
+    @ResponseBody
+    public Map<String, Object> validarTrivia(@RequestParam String nombreIntento, @RequestParam int idPokemon, Principal principal) {
+        Pokemon p = pokemonService.getById(idPokemon);
+        boolean esCorrecto = p.getNombre().equalsIgnoreCase(nombreIntento.trim());
+        
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("success", esCorrecto);
+        respuesta.put("nombreReal", p.getNombre().toUpperCase());
+
+        if (principal != null) {
+            Usuario usuario = usuarioDAO.getByUsernameOrCorreo(principal.getName());
+            if (usuario != null) {
+                if (esCorrecto) {
+                    usuario.setRachaActual(usuario.getRachaActual() + 1);
+                    if (usuario.getRachaActual() > usuario.getMaxRacha()) {
+                        usuario.setMaxRacha(usuario.getRachaActual());
+                    }
+                } else {
+                    usuario.setRachaActual(0);
+                }
+                
+                usuarioDAO.updateUsuario(usuario); 
+                respuesta.put("rachaActual", usuario.getRachaActual());
+            }
+        }
+        return respuesta;
+    }
+
+    @GetMapping("/pokedex/api/trivia-ranking")
+    @ResponseBody
+    public List<Usuario> obtenerRankingTrivia() {
+        return usuarioDAO.getTop5Rachas(); 
+    }
 }
