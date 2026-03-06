@@ -208,19 +208,6 @@ public class UsuarioDAO {
             return new java.util.ArrayList<>();
         }
     }
-}
 
-    public List<Usuario> getTop5Rachas() {
-        String sql = "SELECT USERNAME, MAX_RACHA FROM USUARIO WHERE MAX_RACHA > 0 ORDER BY MAX_RACHA DESC FETCH FIRST 5 ROWS ONLY";
-        try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> {
-                Usuario usuario = new Usuario();
-                usuario.setUsername(rs.getString("USERNAME"));
-                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
-                return usuario;
-            });
-        } catch (Exception e) {
-            return new java.util.ArrayList<>();
-        }
-    }
+
 }

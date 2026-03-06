@@ -280,34 +280,16 @@
             const content = document.getElementById('content');
             const title = document.getElementById('title');
 
-<<<<<<< Canapk
-            centerBtn.addEventListener('click', () => {
-                pokeball.classList.add('rotate');
-
-                setTimeout(() => {
-=======
-            const battleSounds = [
-                'https://play.pokemonshowdown.com/audio/cries/pikachu.mp3',
-                'https://play.pokemonshowdown.com/audio/cries/charizard.mp3',
-                'https://play.pokemonshowdown.com/audio/cries/bulbasaur.mp3',
-                'https://play.pokemonshowdown.com/audio/cries/squirtle.mp3',
-                'https://play.pokemonshowdown.com/audio/cries/jigglypuff.mp3'
-            ];
-
             centerBtn.addEventListener('click', () => {
 
+                // Detener la animación de brillo al hacer clic
                 centerBtn.style.animation = "none";
 
-                const soundSrc = battleSounds[Math.floor(Math.random() * battleSounds.length)];
-                const audio = new Audio(soundSrc);
-                audio.volume = 0.7;
-                audio.play();
-
+                // Girar la Pokeball
                 pokeball.classList.add('rotate');
 
                 setTimeout(() => {
 
->>>>>>> master
                     content.style.display = 'flex';
                     title.style.opacity = 1;
 
