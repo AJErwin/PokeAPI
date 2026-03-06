@@ -12,7 +12,6 @@
             font-family: 'Press Start 2P', cursive;
             padding: 20px;
             
-            /* --- FONDO INTEGRADO --- */
             background-image: url('/img/Fondo.jpg'); 
             background-size: 100%; 
             background-position: top center;
@@ -22,7 +21,7 @@
             image-rendering: pixelated;
         }
         .gba-container {
-            background-color: rgba(248, 248, 248, 0.95); /* Ligera transparencia */
+            background-color: rgba(248, 248, 248, 0.95); 
             border: 8px solid #585858;
             border-radius: 10px;
             padding: 20px;
@@ -96,9 +95,15 @@
         .marquee-content {
             display: inline-block;
         }
+        
         .animate-scroll {
-            animation: scroll-left 15s linear infinite;
+            animation: scroll-left 30s linear infinite;
         }
+        
+        .favs-marquee-container:hover .animate-scroll {
+            animation-play-state: paused;
+        }
+
         .fav-item {
             display: inline-flex;
             flex-direction: column;
@@ -155,7 +160,10 @@
                             <td colspan="6" style="padding: 0; background: #282828; border-top: none;">
                                 <div th:if="${not #lists.isEmpty(usuario.favoritos)}" class="favs-marquee-container">
                                     
-                                    <div th:if="${#lists.size(usuario.favoritos) > 5}" class="marquee-content animate-scroll">
+                                    <div th:if="${#lists.size(usuario.favoritos) > 5}" 
+                                         class="marquee-content animate-scroll"
+                                         th:style="'animation-duration: ' + (${#lists.size(usuario.favoritos)} * 4) + 's;'">
+                                         
                                         <div th:each="pokemon : ${usuario.favoritos}" class="fav-item">
                                             <img th:src="${pokemon.urlImagen}" alt="Pokemon">
                                             <span th:text="${pokemon.nombre}"></span>

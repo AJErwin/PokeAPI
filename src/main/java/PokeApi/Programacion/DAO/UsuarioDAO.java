@@ -106,18 +106,25 @@ public class UsuarioDAO {
         }
     }
 
-    public List<Pokemon> getFavoritosGlobales(String orden) {
+    public List<Pokemon> getFavoritosGlobales(String orden, int limit, int offset) {
         String direccion = "asc".equalsIgnoreCase(orden) ? "ASC" : "DESC";
-        String sql = "SELECT idPokemon AS id, COUNT(idPokemon) AS cantidadFavoritos "
+        
+        String sql = "SELECT idPokemon AS id, MAX(POKEMON) AS nombre, COUNT(idPokemon) AS cantidadFavoritos "
                 + "FROM favorito GROUP BY idPokemon "
-                + "ORDER BY cantidadFavoritos " + direccion;
+                + "ORDER BY cantidadFavoritos " + direccion
+                + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                
         try {
             return jdbcTemplate.query(sql, (rs, rowNum) -> {
                 Pokemon p = new Pokemon();
                 p.setId(rs.getInt("id"));
+                p.setNombre(rs.getString("nombre")); 
                 p.setCantidadFavoritos(rs.getInt("cantidadFavoritos"));
+                
+                p.setUrlImagen("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + p.getId() + ".png");
+                
                 return p;
-            });
+            }, offset, limit); 
         } catch (Exception e) {
             return new java.util.ArrayList<>();
         }
@@ -186,6 +193,20 @@ public class UsuarioDAO {
         }
 
         return pokemon;
+    }
+
+    public List<Usuario> getTop5Rachas() {
+        String sql = "SELECT USERNAME, MAX_RACHA FROM USUARIO WHERE MAX_RACHA > 0 ORDER BY MAX_RACHA DESC FETCH FIRST 5 ROWS ONLY";
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                Usuario usuario = new Usuario();
+                usuario.setUsername(rs.getString("USERNAME"));
+                usuario.setMaxRacha(rs.getInt("MAX_RACHA"));
+                return usuario;
+            });
+        } catch (Exception e) {
+            return new java.util.ArrayList<>();
+        }
     }
 }
 
