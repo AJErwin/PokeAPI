@@ -177,7 +177,6 @@
             z-index: 100;
         }
 
-        /* NUEVOS ESTILOS MOVIDOS DESDE EL HTML */
         .ability-badge {
             background: linear-gradient(145deg, #f8f8d8, #e8e8b8);
             border: 4px solid #585858;
@@ -612,6 +611,23 @@
         if (savedTheme) {
             setSceneTheme(savedTheme);
         }
+
+        // --- CÓDIGO DE SONIDO RESTAURADO ---
+        // Usamos la API oficial más reciente para los gritos de los Pokémon
+        const cry = new Audio(`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pkmnId}.ogg`);
+        cry.volume = 0.4;
+        
+        const playPromise = cry.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("El navegador bloqueó el autoplay por seguridad. El sonido se escuchará al hacer el primer clic.");
+                document.addEventListener('click', () => {
+                    cry.play().catch(e => console.log("Error al reproducir audio:", e));
+                }, { once: true });
+            });
+        }
+        // -----------------------------------
 
         const typeColors = {
             normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
