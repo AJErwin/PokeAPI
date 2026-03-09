@@ -13,6 +13,7 @@
                 margin:0;
                 height:100vh;
                 display:flex;
+                flex-direction:column;
                 justify-content:center;
                 align-items:center;
                 font-family:'Orbitron', sans-serif;
@@ -60,8 +61,6 @@
                 justify-content:center;
                 align-items:center;
                 transition: transform 0.3s ease;
-
-                /* brillo */
                 animation: glow 1.5s infinite alternate;
             }
 
@@ -82,7 +81,6 @@
                 transform: scale(0.9);
             }
 
-            /* animacion de brillo */
             @keyframes glow{
                 0%{
                     box-shadow:0 0 10px #fff, 0 0 20px #ff1a1a;
@@ -209,6 +207,28 @@
                 }
             }
 
+            /* TEXTO ABAJO EN FONDO BLANCO */
+
+            .press-text{
+                margin-top:25px;
+                font-size:18px;
+                color:rgba(0,0,0,0.5);
+                letter-spacing:1px;
+                animation: fadeText 2.5s infinite;
+            }
+
+            @keyframes fadeText{
+                0%{
+                    opacity:.2;
+                }
+                50%{
+                    opacity:.8;
+                }
+                100%{
+                    opacity:.2;
+                }
+            }
+
             @media(max-width:600px){
 
                 .pokeball{
@@ -273,19 +293,24 @@
 
         </div>
 
+        <div class="press-text" id="pressText">
+            Press the Poké Ball to continue
+        </div>
+
         <script>
 
             const centerBtn = document.getElementById('centerBtn');
             const pokeball = document.getElementById('pokeball');
             const content = document.getElementById('content');
             const title = document.getElementById('title');
+            const pressText = document.getElementById('pressText');
 
             centerBtn.addEventListener('click', () => {
 
-                // Detener la animación de brillo al hacer clic
                 centerBtn.style.animation = "none";
 
-                // Girar la Pokeball
+                pressText.style.display = "none";
+
                 pokeball.classList.add('rotate');
 
                 setTimeout(() => {
